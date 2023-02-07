@@ -246,6 +246,9 @@ class RTCPeerConnectionNative extends RTCPeerConnection {
   Future<RTCSessionDescription> createOffer(
       [Map<String, dynamic>? constraints]) async {
     try {
+
+      print("-----------------dunp------------:createOffer");
+
       final response =
           await WebRTC.invokeMethod('createOffer', <String, dynamic>{
         'peerConnectionId': _peerConnectionId,
