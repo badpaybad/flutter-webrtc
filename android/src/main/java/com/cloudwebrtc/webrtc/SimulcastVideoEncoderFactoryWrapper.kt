@@ -93,7 +93,7 @@ internal class SimulcastVideoEncoderFactoryWrapper(
         ): VideoCodecStatus {
             streamSettings = settings
             val future = executor.submit(Callable {
-                Log.d("NGUYENPHANDU", "NGUYENPHANDU: Test1")
+                Log.i("NGUYENPHANDU", "NGUYENPHANDU: Test1")
             //     LKLog.i {
             //         """initEncode() thread=${Thread.currentThread().name} [${Thread.currentThread().id}]
             //     |  encoder=${encoder.implementationName}
