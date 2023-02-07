@@ -30,6 +30,10 @@ class RTCFactoryNative extends RTCFactory {
   Future<RTCPeerConnection> createPeerConnection(
       Map<String, dynamic> configuration,
       [Map<String, dynamic> constraints = const {}]) async {
+
+
+    print("-----------------dunp------------:createPeerConnection by default");
+
     var defaultConstraints = <String, dynamic>{
       'mandatory': {},
       'optional': [
@@ -66,6 +70,10 @@ class RTCFactoryNative extends RTCFactory {
 Future<RTCPeerConnection> createPeerConnection(
     Map<String, dynamic> configuration,
     [Map<String, dynamic> constraints = const {}]) async {
+
+
+  print("-----------------dunp------------:createPeerConnection native function");
+
   return RTCFactoryNative.instance
       .createPeerConnection(configuration, constraints);
 }
