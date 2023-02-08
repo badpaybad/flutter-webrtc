@@ -1,9 +1,11 @@
 package com.cloudwebrtc.webrtc
 
+import android.util.Log
 import org.webrtc.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 /*
 Copyright 2017, Lyo Kato <lyo.kato at gmail.com> (Original Author)
@@ -56,7 +58,12 @@ internal class SimulcastVideoEncoderFactoryWrapper(
         private val softwareVideoEncoderFactory: VideoEncoderFactory = SoftwareVideoEncoderFactory()
 
         override fun createEncoder(info: VideoCodecInfo): VideoEncoder? {
+
+            Log.i("dunp","dunp---------------------SoftwareVideoEncoderFactory().createEncoder()")
+
             val softwareEncoder = softwareVideoEncoderFactory.createEncoder(info)
+            return softwareEncoder;
+
             val hardwareEncoder = hardwareVideoEncoderFactory.createEncoder(info)
             return if (hardwareEncoder != null && softwareEncoder != null) {
                 VideoEncoderFallback(hardwareEncoder, softwareEncoder)
