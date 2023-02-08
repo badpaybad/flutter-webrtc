@@ -31,8 +31,7 @@ class RTCFactoryNative extends RTCFactory {
       Map<String, dynamic> configuration,
       [Map<String, dynamic> constraints = const {}]) async {
 
-
-    print("-----------------dunp------------:createPeerConnection by default");
+    print("------------dunp-------------------");
 
     var defaultConstraints = <String, dynamic>{
       'mandatory': {},
@@ -65,21 +64,47 @@ class RTCFactoryNative extends RTCFactory {
 
   @override
   Navigator get navigator => NavigatorNative.instance;
+
+  @override
+  Future<RTCRtpCapabilities> getRtpReceiverCapabilities(String kind) async {
+    final response = await WebRTC.invokeMethod(
+      'getRtpReceiverCapabilities',
+      <String, dynamic>{
+        'kind': kind,
+      },
+    );
+    return RTCRtpCapabilities.fromMap(response);
+  }
+
+  @override
+  Future<RTCRtpCapabilities> getRtpSenderCapabilities(String kind) async {
+    final response = await WebRTC.invokeMethod(
+      'getRtpSenderCapabilities',
+      <String, dynamic>{
+        'kind': kind,
+      },
+    );
+    return RTCRtpCapabilities.fromMap(response);
+  }
 }
 
 Future<RTCPeerConnection> createPeerConnection(
     Map<String, dynamic> configuration,
     [Map<String, dynamic> constraints = const {}]) async {
-
-
-  print("-----------------dunp------------:createPeerConnection native function");
-
   return RTCFactoryNative.instance
       .createPeerConnection(configuration, constraints);
 }
 
 Future<MediaStream> createLocalMediaStream(String label) async {
   return RTCFactoryNative.instance.createLocalMediaStream(label);
+}
+
+Future<RTCRtpCapabilities> getRtpReceiverCapabilities(String kind) async {
+  return RTCFactoryNative.instance.getRtpReceiverCapabilities(kind);
+}
+
+Future<RTCRtpCapabilities> getRtpSenderCapabilities(String kind) async {
+  return RTCFactoryNative.instance.getRtpSenderCapabilities(kind);
 }
 
 MediaRecorder mediaRecorder() {

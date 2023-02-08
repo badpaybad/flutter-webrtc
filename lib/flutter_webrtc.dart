@@ -14,5 +14,3 @@ export 'src/native/rtc_video_renderer_impl.dart'
 export 'src/native/rtc_video_view_impl.dart'
     if (dart.library.html) 'src/web/rtc_video_view_impl.dart';
 export 'src/native/utils.dart' if (dart.library.html) 'src/web/utils.dart';
-
-///todo:for check if pubspec.yaml can see this

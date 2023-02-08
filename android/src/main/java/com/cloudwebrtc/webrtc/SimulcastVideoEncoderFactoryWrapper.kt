@@ -4,7 +4,6 @@ import org.webrtc.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import android.util.Log
 
 /*
 Copyright 2017, Lyo Kato <lyo.kato at gmail.com> (Original Author)
@@ -93,7 +92,6 @@ internal class SimulcastVideoEncoderFactoryWrapper(
         ): VideoCodecStatus {
             streamSettings = settings
             val future = executor.submit(Callable {
-                Log.i("NGUYENPHANDU", "NGUYENPHANDU: Test1")
             //     LKLog.i {
             //         """initEncode() thread=${Thread.currentThread().name} [${Thread.currentThread().id}]
             //     |  encoder=${encoder.implementationName}
