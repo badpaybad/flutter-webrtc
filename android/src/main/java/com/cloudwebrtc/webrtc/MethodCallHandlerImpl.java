@@ -38,6 +38,8 @@ import org.webrtc.DefaultVideoDecoderFactory;
 import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.DtmfSender;
 import org.webrtc.EglBase;
+import org.webrtc.HardwareVideoDecoderFactory;
+import org.webrtc.HardwareVideoEncoderFactory;
 import org.webrtc.IceCandidate;
 import org.webrtc.Logging;
 import org.webrtc.MediaConstraints;
@@ -59,12 +61,21 @@ import org.webrtc.PeerConnection.TcpCandidatePolicy;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.PeerConnectionFactory.InitializationOptions;
 import org.webrtc.PeerConnectionFactory.Options;
+import org.webrtc.PlatformSoftwareVideoDecoderFactory;
 import org.webrtc.RtpCapabilities;
 import org.webrtc.RtpSender;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 import org.webrtc.SessionDescription.Type;
+import org.webrtc.SoftwareVideoDecoderFactory;
+import org.webrtc.SoftwareVideoEncoderFactory;
 import org.webrtc.VideoCodecInfo;
+import org.webrtc.VideoDecoder;
+import org.webrtc.VideoDecoderFactory;
+import org.webrtc.VideoDecoderFallback;
+import org.webrtc.VideoEncoder;
+import org.webrtc.VideoEncoderFactory;
+import org.webrtc.VideoEncoderFallback;
 import org.webrtc.VideoTrack;
 import org.webrtc.audio.AudioDeviceModule;
 import org.webrtc.audio.JavaAudioDeviceModule;
@@ -86,6 +97,10 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.view.TextureRegistry;
 import io.flutter.view.TextureRegistry.SurfaceTextureEntry;
+
+import androidx.annotation.Nullable;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 
 public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
   static public final String TAG = "FlutterWebRTCPlugin";
@@ -163,7 +178,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     getUserMediaImpl.audioDeviceModule = (JavaAudioDeviceModule) audioDeviceModule;
 
-    DefaultVideoDecoderFactory vidDecoder=new DefaultVideoDecoderFactory(eglContext);
+    //DefaultVideoDecoderFactory vidDecoder=new DefaultVideoDecoderFactory(eglContext);
+    DunpDefaultVideoDecoderFactory vidDecoder=new DunpDefaultVideoDecoderFactory(eglContext);
 
     for (VideoCodecInfo a: vidDecoder.getSupportedCodecs()  ) {
         Log.i("dunp","dunp------vidDecoder: "+a.name);
@@ -1969,3 +1985,5 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
             permissions.toArray(new String[permissions.size()]), callback);
   }
 }
+
+
