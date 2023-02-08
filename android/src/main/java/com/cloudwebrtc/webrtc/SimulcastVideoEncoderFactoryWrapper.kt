@@ -59,10 +59,10 @@ internal class SimulcastVideoEncoderFactoryWrapper(
 
         override fun createEncoder(info: VideoCodecInfo): VideoEncoder? {
 
-            Log.i("dunp","dunp---------------------SoftwareVideoEncoderFactory().createEncoder()")
+            Log.i("dunp","dunp---------------------SoftwareVideoEncoderFactory().createEncoder() "+ info.name)
 
             val softwareEncoder = softwareVideoEncoderFactory.createEncoder(info)
-            return softwareEncoder;
+            //return softwareEncoder;
 
             val hardwareEncoder = hardwareVideoEncoderFactory.createEncoder(info)
             return if (hardwareEncoder != null && softwareEncoder != null) {

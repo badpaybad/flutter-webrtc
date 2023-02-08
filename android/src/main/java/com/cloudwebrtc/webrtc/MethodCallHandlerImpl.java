@@ -64,6 +64,7 @@ import org.webrtc.RtpSender;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 import org.webrtc.SessionDescription.Type;
+import org.webrtc.VideoCodecInfo;
 import org.webrtc.VideoTrack;
 import org.webrtc.audio.AudioDeviceModule;
 import org.webrtc.audio.JavaAudioDeviceModule;
@@ -162,11 +163,23 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     getUserMediaImpl.audioDeviceModule = (JavaAudioDeviceModule) audioDeviceModule;
 
+    DefaultVideoDecoderFactory vidDecoder=new DefaultVideoDecoderFactory(eglContext);
+
+    for (VideoCodecInfo a: vidDecoder.getSupportedCodecs()  ) {
+        Log.i("dunp","dunp------vidDecoder: "+a.name);
+    }
+
+    SimulcastVideoEncoderFactoryWrapper vidEncoder=new SimulcastVideoEncoderFactoryWrapper(eglContext, true, true);
+
+    for (VideoCodecInfo a: vidEncoder.getSupportedCodecs()  ) {
+      Log.i("dunp","dunp------vidEncoder: "+a.name);
+    }
+
     mFactory = PeerConnectionFactory.builder()
             .setOptions(new Options())
-            .setVideoEncoderFactory(new SimulcastVideoEncoderFactoryWrapper(eglContext, true, true))
+            .setVideoEncoderFactory(vidEncoder)
             //.setVideoEncoderFactory(new org.webrtc.SoftwareVideoEncoderFactory())
-            .setVideoDecoderFactory(new DefaultVideoDecoderFactory(eglContext))
+            .setVideoDecoderFactory(vidDecoder)
             .setAudioDeviceModule(audioDeviceModule)
             .createPeerConnectionFactory();
   }
