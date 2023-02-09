@@ -36,6 +36,11 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
     public VideoDecoder createDecoder(VideoCodecInfo codecType) {
         VideoDecoder softwareDecoder = this.softwareVideoDecoderFactory.createDecoder(codecType);
 
+        VideoDecoder hardwareDecoder = this.hardwareVideoDecoderFactory.createDecoder(codecType);
+        if (hardwareDecoder != null) {
+            Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null");
+            return softwareDecoder;
+        }
         if (softwareDecoder != null) {
             Log.i("dunp", "dunp----------------------- softwareDecoder NOT null");
             return softwareDecoder;
@@ -50,7 +55,6 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
             return softwareDecoder;
         }
 
-        VideoDecoder hardwareDecoder = this.hardwareVideoDecoderFactory.createDecoder(codecType);
 
         if (hardwareDecoder != null && softwareDecoder != null) {
             if (hardwareDecoder != null) {
