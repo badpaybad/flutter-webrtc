@@ -202,10 +202,21 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
   @Override
   public void onMethodCall(MethodCall call, @NonNull Result notSafeResult) {
-    ensureInitialized();
+    //ensureInitialized();
 
     final AnyThreadResult result = new AnyThreadResult(notSafeResult);
     switch (call.method) {
+      case "initPeerConnectionFactory":{
+        if (mFactory != null) {
+          Log.i("dunp", "dunp----------------------- already call ensureInitialized()");
+          break;
+        }
+        Map<String, Object> decoders = call.argument("decoders");
+        ConstraintsMap args =new ConstraintsMap(decoders);
+        DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback = args.getInt("video");
+        ensureInitialized();
+        break;
+      }
       case "createPeerConnection": {
         Map<String, Object> constraints = call.argument("constraints");
         Map<String, Object> configuration = call.argument("configuration");

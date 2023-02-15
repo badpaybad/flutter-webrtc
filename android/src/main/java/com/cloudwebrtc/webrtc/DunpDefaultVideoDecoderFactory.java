@@ -22,14 +22,12 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
     @Nullable
     private final VideoDecoderFactory platformSoftwareVideoDecoderFactory;
 
+
+
     public DunpDefaultVideoDecoderFactory(@Nullable EglBase.Context eglContext) {
         this.hardwareVideoDecoderFactory = new HardwareVideoDecoderFactory(eglContext);
         this.platformSoftwareVideoDecoderFactory = new PlatformSoftwareVideoDecoderFactory(eglContext);
-    }
 
-    DunpDefaultVideoDecoderFactory(VideoDecoderFactory hardwareVideoDecoderFactory) {
-        this.hardwareVideoDecoderFactory = hardwareVideoDecoderFactory;
-        this.platformSoftwareVideoDecoderFactory = null;
     }
 
     @Nullable
@@ -37,39 +35,37 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
         VideoDecoder softwareDecoder = this.softwareVideoDecoderFactory.createDecoder(codecType);
 
         VideoDecoder hardwareDecoder = this.hardwareVideoDecoderFactory.createDecoder(codecType);
-        if (hardwareDecoder != null) {
-            Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null");
-            return softwareDecoder;
-        }
-        if (softwareDecoder != null) {
-            Log.i("dunp", "dunp----------------------- softwareDecoder NOT null");
-            return softwareDecoder;
-        }
 
-        if (softwareDecoder == null && this.platformSoftwareVideoDecoderFactory != null) {
-            softwareDecoder = this.platformSoftwareVideoDecoderFactory.createDecoder(codecType);
-        }
+        if(DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback==1){
 
-        if (softwareDecoder != null) {
-            Log.i("dunp", "dunp----------------------- softwareDecoderPlatform NOT null");
-            return softwareDecoder;
-        }
-
-
-        if (hardwareDecoder != null && softwareDecoder != null) {
-            if (hardwareDecoder != null) {
-                Log.i("dunp", "dunp----------------------- VideoDecoderFallback NOT null");
-                return softwareDecoder;
-            }
-
-            return new VideoDecoderFallback(softwareDecoder, hardwareDecoder);
-
-        } else {
             if (hardwareDecoder != null) {
                 Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null");
+                return hardwareDecoder;
+            }
+        }
+
+        if(DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback==2){
+
+            if (softwareDecoder != null) {
+                Log.i("dunp", "dunp----------------------- softwareDecoder NOT null");
                 return softwareDecoder;
             }
-            return hardwareDecoder != null ? hardwareDecoder : softwareDecoder;
+
+            if (softwareDecoder == null && this.platformSoftwareVideoDecoderFactory != null) {
+                softwareDecoder = this.platformSoftwareVideoDecoderFactory.createDecoder(codecType);
+            }
+
+            if (softwareDecoder != null) {
+                Log.i("dunp", "dunp----------------------- softwareDecoderPlatform NOT null");
+                return softwareDecoder;
+            }
+        }
+
+        if (hardwareDecoder != null && softwareDecoder != null) {
+           return new VideoDecoderFallback(softwareDecoder, hardwareDecoder);
+        } else {
+            Log.i("dunp", "dunp----------------------- return softwareDecoder!=null?softwareDecoder:hardwareDecoder;");
+           return hardwareDecoder !=null?hardwareDecoder:softwareDecoder;
         }
     }
 
