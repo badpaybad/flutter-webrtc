@@ -95,6 +95,7 @@ Future<void> initPeerConnectionFactory(Map<String,dynamic> args) async{
       'decoders': args,
     },
   );
+  print("dunp initPeerConnectionFactory");
 }
 
 Future<RTCPeerConnection> createPeerConnection(

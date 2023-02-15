@@ -23,7 +23,6 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
     private final VideoDecoderFactory platformSoftwareVideoDecoderFactory;
 
 
-
     public DunpDefaultVideoDecoderFactory(@Nullable EglBase.Context eglContext) {
         this.hardwareVideoDecoderFactory = new HardwareVideoDecoderFactory(eglContext);
         this.platformSoftwareVideoDecoderFactory = new PlatformSoftwareVideoDecoderFactory(eglContext);
@@ -32,22 +31,23 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
 
     @Nullable
     public VideoDecoder createDecoder(VideoCodecInfo codecType) {
-        VideoDecoder softwareDecoder = this.softwareVideoDecoderFactory.createDecoder(codecType);
 
         VideoDecoder hardwareDecoder = this.hardwareVideoDecoderFactory.createDecoder(codecType);
 
-        if(DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback==1){
+        if (DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback == 1) {
 
             if (hardwareDecoder != null) {
-                Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null");
+                Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null : " + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
                 return hardwareDecoder;
             }
         }
 
-        if(DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback==2){
+        VideoDecoder softwareDecoder = this.softwareVideoDecoderFactory.createDecoder(codecType);
+
+        if (DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback == 2) {
 
             if (softwareDecoder != null) {
-                Log.i("dunp", "dunp----------------------- softwareDecoder NOT null");
+                Log.i("dunp", "dunp----------------------- softwareDecoder NOT null : " + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
                 return softwareDecoder;
             }
 
@@ -56,16 +56,16 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
             }
 
             if (softwareDecoder != null) {
-                Log.i("dunp", "dunp----------------------- softwareDecoderPlatform NOT null");
+                Log.i("dunp", "dunp----------------------- softwareDecoderPlatform NOT null: " + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
                 return softwareDecoder;
             }
         }
 
         if (hardwareDecoder != null && softwareDecoder != null) {
-           return new VideoDecoderFallback(softwareDecoder, hardwareDecoder);
+            return new VideoDecoderFallback(softwareDecoder, hardwareDecoder);
         } else {
-            Log.i("dunp", "dunp----------------------- return softwareDecoder!=null?softwareDecoder:hardwareDecoder;");
-           return hardwareDecoder !=null?hardwareDecoder:softwareDecoder;
+            Log.i("dunp", "dunp----------------------- return softwareDecoder!=null?softwareDecoder:hardwareDecoder;" + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
+            return hardwareDecoder != null ? hardwareDecoder : softwareDecoder;
         }
     }
 
