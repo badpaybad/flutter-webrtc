@@ -146,6 +146,9 @@ internal class SimulcastVideoEncoderFactoryWrapper(
                     val adaptedFrame = VideoFrame(adaptedBuffer, frame.rotation, frame.timestampNs)
                     val result = encoder.encode(adaptedFrame, encodeInfo)
                     adaptedBuffer.release()
+                    // todo: check if memory overflow
+                    originalBuffer.release()
+                    frame.release()
                     return@Callable result
                 }
             })
