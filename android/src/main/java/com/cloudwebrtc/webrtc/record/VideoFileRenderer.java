@@ -199,6 +199,9 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
                         mediaMuxer.writeSampleData(trackIndex, encodedData, bufferInfo);
                     isRunning = isRunning && (bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) == 0;
                     encoder.releaseOutputBuffer(encoderStatus, false);
+                    //todo: dunp release
+                    encodedData.clear();
+                    encodedData=null;
                     if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                         break;
                     }
@@ -251,6 +254,9 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
                         mediaMuxer.writeSampleData(audioTrackIndex, encodedData, audioBufferInfo);
                     isRunning = isRunning && (audioBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) == 0;
                     audioEncoder.releaseOutputBuffer(encoderStatus, false);
+                    //todo: dunp release
+                    encodedData.clear();
+                    encodedData=null;
                     if ((audioBufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                         break;
                     }
@@ -290,6 +296,9 @@ class VideoFileRenderer implements VideoSink, SamplesReadyCallback {
                 buffer.put(data);
                 audioEncoder.queueInputBuffer(bufferIndex, 0, data.length, presTime, 0);
                 presTime += data.length * 125 / 12; // 1000000 microseconds / 48000hz / 2 bytes
+                //todo: dunp release
+                buffer.clear();
+                buffer=null;
             }
             drainAudio();
         });
