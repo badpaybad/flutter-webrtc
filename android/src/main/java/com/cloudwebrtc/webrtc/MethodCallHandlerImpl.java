@@ -170,7 +170,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
     }else{
       builderFactory.setEnableInternalTracer(false);
-      builderFactory.setInjectableLogger(null,Logging.Severity.LS_ERROR);
+      builderFactory.setInjectableLogger(new DunpNoneLoggable(),Logging.Severity.LS_ERROR);
 
     }
 
@@ -2017,3 +2017,10 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 }
 
 
+class DunpNoneLoggable implements  org.webrtc.Loggable{
+
+  @Override
+  public void onLogMessage(String s, Logging.Severity severity, String s1) {
+    
+  }
+}
