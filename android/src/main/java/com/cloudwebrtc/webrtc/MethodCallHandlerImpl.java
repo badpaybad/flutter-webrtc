@@ -167,7 +167,6 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     //tod: dunp add context config
     if(DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc==1){
       builderFactory.setEnableInternalTracer(true);
-      Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
     }else{
       builderFactory.setEnableInternalTracer(false);
       builderFactory.setInjectableLogger(new DunpNoneLoggable(),Logging.Severity.LS_ERROR);
