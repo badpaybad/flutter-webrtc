@@ -41,6 +41,7 @@ import org.webrtc.EglBase;
 import org.webrtc.HardwareVideoDecoderFactory;
 import org.webrtc.HardwareVideoEncoderFactory;
 import org.webrtc.IceCandidate;
+import org.webrtc.Loggable;
 import org.webrtc.Logging;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaConstraints.KeyValuePair;
@@ -160,10 +161,18 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       return;
     }
 
-    PeerConnectionFactory.initialize(
-            InitializationOptions.builder(context)
-                    .setEnableInternalTracer(DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc==1?true:false)
-                    .createInitializationOptions());
+
+    PeerConnectionFactory.InitializationOptions.Builder builderFactory=
+            InitializationOptions.builder(context);
+    //tod: dunp add context config
+    if(DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc==1){
+      builderFactory.setEnableInternalTracer(true);
+    }else{
+      builderFactory.setEnableInternalTracer(false);
+      builderFactory.setInjectableLogger(null,null);
+    }
+
+    PeerConnectionFactory.initialize(builderFactory.createInitializationOptions());
 
     // Initialize EGL contexts required for HW acceleration.
     EglBase.Context eglContext = EglUtils.getRootEglBaseContext();
