@@ -162,7 +162,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     PeerConnectionFactory.initialize(
             InitializationOptions.builder(context)
-                    .setEnableInternalTracer(true)
+                    .setEnableInternalTracer(DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc==1?true:false)
                     .createInitializationOptions());
 
     // Initialize EGL contexts required for HW acceleration.
@@ -216,6 +216,11 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         Map<String, Object> decoders = call.argument("decoders");
         ConstraintsMap args =new ConstraintsMap(decoders);
         DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback = args.getInt("video");
+
+        Map<String, Object> logs = call.argument("logs");
+        ConstraintsMap argsLogs =new ConstraintsMap(logs);
+        DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc = args.getInt("traceEnable");
+
         ensureInitialized();
         result.success(null);
         break;

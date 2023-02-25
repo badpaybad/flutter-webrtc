@@ -91,9 +91,7 @@ class RTCFactoryNative extends RTCFactory {
 Future<void> initPeerConnectionFactory(Map<String,dynamic> args) async{
   final response = await WebRTC.invokeMethod(
     'initPeerConnectionFactory',
-    <String, dynamic>{
-      'decoders': args,
-    },
+    args,
   );
   print("dunp initPeerConnectionFactory");
 }
