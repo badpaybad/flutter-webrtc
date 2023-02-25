@@ -2,7 +2,6 @@ package com.cloudwebrtc.webrtc;
 
 import static com.cloudwebrtc.webrtc.utils.MediaConstraintsUtils.parseMediaConstraints;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -34,14 +33,9 @@ import com.twilio.audioswitch.AudioDevice;
 
 import org.webrtc.AudioTrack;
 import org.webrtc.CryptoOptions;
-import org.webrtc.DefaultVideoDecoderFactory;
-import org.webrtc.DefaultVideoEncoderFactory;
 import org.webrtc.DtmfSender;
 import org.webrtc.EglBase;
-import org.webrtc.HardwareVideoDecoderFactory;
-import org.webrtc.HardwareVideoEncoderFactory;
 import org.webrtc.IceCandidate;
-import org.webrtc.Loggable;
 import org.webrtc.Logging;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaConstraints.KeyValuePair;
@@ -62,21 +56,12 @@ import org.webrtc.PeerConnection.TcpCandidatePolicy;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.PeerConnectionFactory.InitializationOptions;
 import org.webrtc.PeerConnectionFactory.Options;
-import org.webrtc.PlatformSoftwareVideoDecoderFactory;
 import org.webrtc.RtpCapabilities;
 import org.webrtc.RtpSender;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 import org.webrtc.SessionDescription.Type;
-import org.webrtc.SoftwareVideoDecoderFactory;
-import org.webrtc.SoftwareVideoEncoderFactory;
 import org.webrtc.VideoCodecInfo;
-import org.webrtc.VideoDecoder;
-import org.webrtc.VideoDecoderFactory;
-import org.webrtc.VideoDecoderFallback;
-import org.webrtc.VideoEncoder;
-import org.webrtc.VideoEncoderFactory;
-import org.webrtc.VideoEncoderFallback;
 import org.webrtc.VideoTrack;
 import org.webrtc.audio.AudioDeviceModule;
 import org.webrtc.audio.JavaAudioDeviceModule;
@@ -98,10 +83,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.view.TextureRegistry;
 import io.flutter.view.TextureRegistry.SurfaceTextureEntry;
-
-import androidx.annotation.Nullable;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 
 public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
   static public final String TAG = "FlutterWebRTCPlugin";
@@ -169,7 +150,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       builderFactory.setEnableInternalTracer(true);
     }else{
       builderFactory.setEnableInternalTracer(false);
-      builderFactory.setInjectableLogger(new DunpNoneLoggable(),Logging.Severity.LS_ERROR);
+      builderFactory.setInjectableLogger(new DunpLoggableNoPrintMessage(),Logging.Severity.LS_ERROR);
 
     }
 
@@ -2016,10 +1997,3 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 }
 
 
-class DunpNoneLoggable implements  org.webrtc.Loggable{
-
-  @Override
-  public void onLogMessage(String s, Logging.Severity severity, String s1) {
-    
-  }
-}
