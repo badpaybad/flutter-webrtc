@@ -89,6 +89,17 @@ class RTCFactoryNative extends RTCFactory {
 }
 
 Future<void> initPeerConnectionFactory(Map<String,dynamic> args) async{
+  /*
+  * args
+     {
+        "decoders":{
+          "video": 2 //1: hardware, 2: soft, 3: fallback
+        },
+        "logs":{
+          "traceEnable":0
+        }
+      }
+  */
   final response = await WebRTC.invokeMethod(
     'initPeerConnectionFactory',
     args,

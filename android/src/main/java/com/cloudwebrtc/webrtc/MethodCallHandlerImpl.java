@@ -219,7 +219,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
         Map<String, Object> logs = call.argument("logs");
         ConstraintsMap argsLogs =new ConstraintsMap(logs);
-        DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc = args.getInt("traceEnable");
+        DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc = argsLogs.getInt("traceEnable");
 
         ensureInitialized();
         result.success(null);
