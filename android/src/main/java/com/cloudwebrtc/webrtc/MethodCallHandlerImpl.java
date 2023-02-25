@@ -170,8 +170,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       Logging.enableLogToDebugOutput(Logging.Severity.LS_VERBOSE);
     }else{
       builderFactory.setEnableInternalTracer(false);
-      //builderFactory.setInjectableLogger(null,null);
-      Logging.enableLogToDebugOutput(Logging.Severity.LS_NONE);
+      builderFactory.setInjectableLogger(null,Logging.Severity.LS_ERROR);
+
     }
 
     PeerConnectionFactory.initialize(builderFactory.createInitializationOptions());
