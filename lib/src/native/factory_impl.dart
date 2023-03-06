@@ -104,7 +104,7 @@ Future<void> initPeerConnectionFactory(Map<String,dynamic> args) async{
     'initPeerConnectionFactory',
     args,
   );
-  print("dunp initPeerConnectionFactory");
+  print("dunp initPeerConnectionFactory: $args");
 }
 
 Future<RTCPeerConnection> createPeerConnection(
