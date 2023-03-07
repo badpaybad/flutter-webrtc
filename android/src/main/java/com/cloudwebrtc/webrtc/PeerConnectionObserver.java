@@ -153,14 +153,15 @@ class PeerConnectionObserver implements PeerConnection.Observer, EventChannel.St
             Log.d(TAG, "dataChannelClose() dataChannel is null");
         }
     }
-
-    void dataChannelSend(String dataChannelId, ByteBuffer byteBuffer, Boolean isBinary) {
+    //todo: dunp change bool dataChannelSend
+    boolean dataChannelSend(String dataChannelId, ByteBuffer byteBuffer, Boolean isBinary) {
         DataChannel dataChannel = dataChannels.get(dataChannelId);
         if (dataChannel != null) {
             DataChannel.Buffer buffer = new DataChannel.Buffer(byteBuffer, isBinary);
-            dataChannel.send(buffer);
+           return dataChannel.send(buffer);
         } else {
             Log.d(TAG, "dataChannelSend() dataChannel is null");
+            return false;
         }
     }
 
