@@ -112,7 +112,6 @@ class RTCDataChannelNative extends RTCDataChannel {
 
   @override
   Future<void> send(RTCDataChannelMessage message) async {
-    var sendResponse =
         await WebRTC.invokeMethod('dataChannelSend', <String, dynamic>{
       'peerConnectionId': _peerConnectionId,
       'dataChannelId': _flutterId,
@@ -121,7 +120,7 @@ class RTCDataChannelNative extends RTCDataChannel {
     });
 
     print(
-        "dunp-------Future<void> send(RTCDataChannelMessage message _peerConnectionId $_peerConnectionId dataChannelId $_flutterId ) $sendResponse");
+        "dunp-------Future<void> send(RTCDataChannelMessage message _peerConnectionId $_peerConnectionId ndavtiveataChannelId $_flutterId flutterdatachannelid $_dataChannelId lbl $_label)");
   }
 
   @override

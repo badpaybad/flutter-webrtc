@@ -369,7 +369,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
             return;
           }
         }
-         dataChannelSend(peerConnectionId, dataChannelId, byteBuffer, isBinary);
+        dataChannelSend(peerConnectionId, dataChannelId, byteBuffer, isBinary);
         result.success(null);
         break;
       }
@@ -1762,11 +1762,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     if (pco == null || pco.getPeerConnection() == null) {
       Log.d(TAG, "dataChannelSend() peerConnection is null");
     } else {
-      Log.d(TAG, "pco.dataChannelSend(dataChannelId, bytebuffer, isBinary)");
-
-      boolean r = pco.dataChannelSend(dataChannelId, bytebuffer, isBinary);
-      Log.i("dunp","pco.dataChannelSend(dataChannelId, bytebuffer, isBinary) "+String.valueOf(r));
-
+      pco.dataChannelSend(dataChannelId, bytebuffer, isBinary);
     }
   }
 
