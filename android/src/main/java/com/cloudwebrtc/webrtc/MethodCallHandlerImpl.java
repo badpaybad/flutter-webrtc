@@ -369,8 +369,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
             return;
           }
         }
-        boolean resultsent= dataChannelSend(peerConnectionId, dataChannelId, byteBuffer, isBinary);
-        result.success(resultsent);
+         dataChannelSend(peerConnectionId, dataChannelId, byteBuffer, isBinary);
+        result.success(null);
         break;
       }
       case "dataChannelClose": {
@@ -1752,8 +1752,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
       pco.createDataChannel(label, config, result);
     }
   }
-  //todo: dunp bool dataChannelSend
-  public boolean dataChannelSend(String peerConnectionId, String dataChannelId, ByteBuffer bytebuffer,
+
+  public void dataChannelSend(String peerConnectionId, String dataChannelId, ByteBuffer bytebuffer,
                               Boolean isBinary) {
     // Forward to PeerConnectionObserver which deals with DataChannels
     // because DataChannel is owned by PeerConnection.
@@ -1761,9 +1761,12 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
             = mPeerConnectionObservers.get(peerConnectionId);
     if (pco == null || pco.getPeerConnection() == null) {
       Log.d(TAG, "dataChannelSend() peerConnection is null");
-      return false;
     } else {
-     return pco.dataChannelSend(dataChannelId, bytebuffer, isBinary);
+      Log.d(TAG, "pco.dataChannelSend(dataChannelId, bytebuffer, isBinary)");
+
+      boolean r = pco.dataChannelSend(dataChannelId, bytebuffer, isBinary);
+      Log.i("dunp","pco.dataChannelSend(dataChannelId, bytebuffer, isBinary) "+String.valueOf(r));
+
     }
   }
 

@@ -121,7 +121,7 @@ class RTCDataChannelNative extends RTCDataChannel {
     });
 
     print(
-        "dunp-------Future<void> send(RTCDataChannelMessage message) $sendResponse");
+        "dunp-------Future<void> send(RTCDataChannelMessage message _peerConnectionId $_peerConnectionId dataChannelId $_flutterId ) $sendResponse");
   }
 
   @override
