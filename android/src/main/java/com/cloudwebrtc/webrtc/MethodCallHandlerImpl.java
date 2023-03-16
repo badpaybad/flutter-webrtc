@@ -151,7 +151,6 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     }else{
       builderFactory.setEnableInternalTracer(false);
       builderFactory.setInjectableLogger(new DunpLoggableNoPrintMessage(),Logging.Severity.LS_ERROR);
-
     }
 
     PeerConnectionFactory.initialize(builderFactory.createInitializationOptions());

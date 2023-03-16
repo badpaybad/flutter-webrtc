@@ -32,15 +32,7 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
     @Nullable
     public VideoDecoder createDecoder(VideoCodecInfo codecType) {
 
-        VideoDecoder hardwareDecoder = this.hardwareVideoDecoderFactory.createDecoder(codecType);
-
-        if (DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback == 1) {
-
-            if (hardwareDecoder != null) {
-                Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null : " + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
-                return hardwareDecoder;
-            }
-        }
+        Log.i("dunp","dunp------createDecoder: "+DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
 
         VideoDecoder softwareDecoder = this.softwareVideoDecoderFactory.createDecoder(codecType);
 
@@ -58,6 +50,16 @@ public class DunpDefaultVideoDecoderFactory implements VideoDecoderFactory {
             if (softwareDecoder != null) {
                 Log.i("dunp", "dunp----------------------- softwareDecoderPlatform NOT null: " + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
                 return softwareDecoder;
+            }
+        }
+
+        VideoDecoder hardwareDecoder = this.hardwareVideoDecoderFactory.createDecoder(codecType);
+
+        if (DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback == 1) {
+
+            if (hardwareDecoder != null) {
+                Log.i("dunp", "dunp----------------------- hardwareDecoder NOT null : " + DunpPeerConnectionContext.videoDecoder1Hardware2Software3Fallback);
+                return hardwareDecoder;
             }
         }
 
