@@ -212,6 +212,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         DunpPeerConnectionContext.webrtcEnableInternalTracerebrtc = argsLogs.getInt("traceEnable");
 
         ensureInitialized();
+        Log.i("dunp", "dunp----------------------- after ensureInitialized()");
         result.success(null);
         break;
       }
