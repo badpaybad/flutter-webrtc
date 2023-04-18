@@ -90,17 +90,21 @@ class RTCPeerConnectionNative extends RTCPeerConnection {
         onIceCandidate?.call(candidate);
         break;
       case 'onAddStream':
-        String streamId = map['streamId'];
+        try {
+          String streamId = map['streamId'];
 
-        var stream =
-            _remoteStreams.firstWhere((it) => it.id == streamId, orElse: () {
-          var newStream = MediaStreamNative(streamId, _peerConnectionId);
-          newStream.setMediaTracks(map['audioTracks'], map['videoTracks']);
-          return newStream;
-        });
+          var stream =
+              _remoteStreams.firstWhere((it) => it.id == streamId, orElse: () {
+            var newStream = MediaStreamNative(streamId, _peerConnectionId);
+            newStream.setMediaTracks(map['audioTracks'], map['videoTracks']);
+            return newStream;
+          });
 
-        onAddStream?.call(stream);
-        _remoteStreams.add(stream);
+          onAddStream?.call(stream);
+          _remoteStreams.add(stream);
+        } catch (ex) {
+          print("ERR rtc_peerconnection_impl.dart onAddStream $ex");
+        }
         break;
       case 'onRemoveStream':
         String streamId = map['streamId'];
@@ -114,42 +118,50 @@ class RTCPeerConnectionNative extends RTCPeerConnection {
         _remoteStreams.removeWhere((it) => it.id == streamId);
         break;
       case 'onAddTrack':
-        String streamId = map['streamId'];
-        Map<dynamic, dynamic> track = map['track'];
+        try {
+          String streamId = map['streamId'];
+          Map<dynamic, dynamic> track = map['track'];
 
-        var newTrack = MediaStreamTrackNative(
-            track['id'], track['label'], track['kind'], track['enabled']);
-        String kind = track['kind'];
+          var newTrack = MediaStreamTrackNative(
+              track['id'], track['label'], track['kind'], track['enabled']);
+          String kind = track['kind'];
 
-        var stream =
-            _remoteStreams.firstWhere((it) => it.id == streamId, orElse: () {
-          var newStream = MediaStreamNative(streamId, _peerConnectionId);
-          _remoteStreams.add(newStream);
-          return newStream;
-        });
+          var stream =
+              _remoteStreams.firstWhere((it) => it.id == streamId, orElse: () {
+            var newStream = MediaStreamNative(streamId, _peerConnectionId);
+            _remoteStreams.add(newStream);
+            return newStream;
+          });
 
-        var oldTracks = (kind == 'audio')
-            ? stream.getAudioTracks()
-            : stream.getVideoTracks();
-        var oldTrack = oldTracks.isNotEmpty ? oldTracks[0] : null;
-        if (oldTrack != null) {
-          stream.removeTrack(oldTrack, removeFromNative: false);
-          onRemoveTrack?.call(stream, oldTrack);
+          var oldTracks = (kind == 'audio')
+              ? stream.getAudioTracks()
+              : stream.getVideoTracks();
+          var oldTrack = oldTracks.isNotEmpty ? oldTracks[0] : null;
+          if (oldTrack != null) {
+            stream.removeTrack(oldTrack, removeFromNative: false);
+            onRemoveTrack?.call(stream, oldTrack);
+          }
+
+          stream.addTrack(newTrack, addToNative: false);
+          onAddTrack?.call(stream, newTrack);
+        } catch (ex) {
+          print("ERR rtc_peerconnection_impl.dart onAddTrack $ex");
         }
-
-        stream.addTrack(newTrack, addToNative: false);
-        onAddTrack?.call(stream, newTrack);
         break;
       case 'onRemoveTrack':
-        String trackId = map['trackId'];
-        for (var stream in _remoteStreams) {
-          stream.getTracks().forEach((track) {
-            if (track.id == trackId) {
-              onRemoveTrack?.call(stream, track);
-              stream.removeTrack(track, removeFromNative: false);
-              return;
-            }
-          });
+        try {
+          String trackId = map['trackId'];
+          for (var stream in _remoteStreams) {
+            stream.getTracks().forEach((track) {
+              if (track.id == trackId) {
+                onRemoveTrack?.call(stream, track);
+                stream.removeTrack(track, removeFromNative: false);
+                return;
+              }
+            });
+          }
+        } catch (ex) {
+          print("ERR rtc_peerconnection_impl.dart onRemoveTrack $ex");
         }
         break;
       case 'didOpenDataChannel':
@@ -167,18 +179,23 @@ class RTCPeerConnectionNative extends RTCPeerConnection {
 
       /// Unified-Plan
       case 'onTrack':
-        var params = map['streams'] as List<dynamic>;
-        var streams = params.map((e) => MediaStreamNative.fromMap(e)).toList();
-        var transceiver = map['transceiver'] != null
-            ? RTCRtpTransceiverNative.fromMap(map['transceiver'],
-                peerConnectionId: _peerConnectionId)
-            : null;
-        onTrack?.call(RTCTrackEvent(
-            receiver: RTCRtpReceiverNative.fromMap(map['receiver'],
-                peerConnectionId: _peerConnectionId),
-            streams: streams,
-            track: MediaStreamTrackNative.fromMap(map['track']),
-            transceiver: transceiver));
+        try {
+          var params = map['streams'] as List<dynamic>;
+          var streams =
+              params.map((e) => MediaStreamNative.fromMap(e)).toList();
+          var transceiver = map['transceiver'] != null
+              ? RTCRtpTransceiverNative.fromMap(map['transceiver'],
+                  peerConnectionId: _peerConnectionId)
+              : null;
+          onTrack?.call(RTCTrackEvent(
+              receiver: RTCRtpReceiverNative.fromMap(map['receiver'],
+                  peerConnectionId: _peerConnectionId),
+              streams: streams,
+              track: MediaStreamTrackNative.fromMap(map['track']),
+              transceiver: transceiver));
+        } catch (ex) {
+          print("ERR rtc_peerconnection_impl.dart onTrack $ex");
+        }
         break;
 
       /// Other
@@ -280,11 +297,15 @@ class RTCPeerConnectionNative extends RTCPeerConnection {
 
   @override
   Future<void> addStream(MediaStream stream) async {
-    _localStreams.add(stream);
-    await WebRTC.invokeMethod('addStream', <String, dynamic>{
-      'peerConnectionId': _peerConnectionId,
-      'streamId': stream.id,
-    });
+    try {
+      _localStreams.add(stream);
+      await WebRTC.invokeMethod('addStream', <String, dynamic>{
+        'peerConnectionId': _peerConnectionId,
+        'streamId': stream.id,
+      });
+    } catch (ex) {
+      print("ERR rtc_peerconnection_impl.dart addStream $ex");
+    }
   }
 
   @override

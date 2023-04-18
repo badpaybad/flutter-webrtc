@@ -23,9 +23,16 @@ class WebRTC {
   static bool get platformIsWeb => false;
 
   static Future<T?> invokeMethod<T, P>(String methodName,
-          [dynamic param]) async =>
-      _channel.invokeMethod<T>(
+          [dynamic param]) async {
+    try{
+      return _channel.invokeMethod<T>(
         methodName,
         param,
       );
+    }catch(ex){
+      print("ERR MethodChannel('FlutterWebRTC.Method') invokeMethod $ex");
+      return null;
+    }
+  }
+
 }

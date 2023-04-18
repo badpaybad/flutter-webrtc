@@ -5,8 +5,13 @@ import '../flutter_webrtc.dart';
 
 class Helper {
   static Future<List<MediaDeviceInfo>> enumerateDevices(String type) async {
-    var devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.where((d) => d.kind == type).toList();
+    try {
+      var devices = await navigator.mediaDevices.enumerateDevices();
+      return devices.where((d) => d.kind == type).toList();
+    }catch(ex){
+      print("ERR Helper.enumerateDevices $ex");
+      return [];
+    }
   }
 
   /// Return the available cameras
