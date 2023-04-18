@@ -135,21 +135,26 @@ internal class SimulcastVideoEncoderFactoryWrapper(
                 } else if (frame.buffer.width == streamSettings!!.width) {
                     return@Callable encoder.encode(frame, encodeInfo)
                 } else {
-                    // The incoming buffer is different than the streamSettings received in initEncode()
-                    // Need to scale.
-                    val originalBuffer = frame.buffer
-                    // TODO: Do we need to handle when the scale factor is weird?
-                    val adaptedBuffer = originalBuffer.cropAndScale(
-                        0, 0, originalBuffer.width, originalBuffer.height,
-                        streamSettings!!.width, streamSettings!!.height
-                    )
-                    val adaptedFrame = VideoFrame(adaptedBuffer, frame.rotation, frame.timestampNs)
-                    val result = encoder.encode(adaptedFrame, encodeInfo)
-                    adaptedBuffer.release()
-                    // todo: check if memory overflow
-                    originalBuffer.release()
-                    frame.release()
-                    return@Callable result
+//                    try {
+                        // The incoming buffer is different than the streamSettings received in initEncode()
+                        // Need to scale.
+                        val originalBuffer = frame.buffer
+                        // TODO: Do we need to handle when the scale factor is weird?
+                        val adaptedBuffer = originalBuffer.cropAndScale(
+                            0, 0, originalBuffer.width, originalBuffer.height,
+                            streamSettings!!.width, streamSettings!!.height
+                        )
+                        val adaptedFrame =
+                            VideoFrame(adaptedBuffer, frame.rotation, frame.timestampNs)
+                        val result = encoder.encode(adaptedFrame, encodeInfo)
+                        adaptedBuffer.release()
+                        // todo: check if memory overflow
+                        originalBuffer.release()
+                        frame.release()
+                        return@Callable result
+//                    }catch (e : Exception){
+//                        return@Callable  encoder.encode(frame, encodeInfo)
+//                    }
                 }
             })
             return future.get()
