@@ -55,9 +55,13 @@ class RTCVideoRenderer extends ValueNotifier<RTCVideoValue>
       'streamId': stream?.id ?? '',
       'ownerTag': stream?.ownerTag ?? ''
     }).then((_) {
-      value = (stream == null)
-          ? RTCVideoValue.empty
-          : value.copyWith(renderVideo: renderVideo);
+      try {
+        value = (stream == null)
+            ? RTCVideoValue.empty
+            : value.copyWith(renderVideo: renderVideo);
+      } catch (ex) {
+        print("ERR rtc_video_renderer_impl.dart $ex");
+      }
     });
   }
 
@@ -71,9 +75,13 @@ class RTCVideoRenderer extends ValueNotifier<RTCVideoValue>
       'ownerTag': stream?.ownerTag ?? '',
       'trackId': trackId ?? '0'
     }).then((_) {
-      value = (stream == null)
-          ? RTCVideoValue.empty
-          : value.copyWith(renderVideo: renderVideo);
+      try {
+        value = (stream == null)
+            ? RTCVideoValue.empty
+            : value.copyWith(renderVideo: renderVideo);
+      } catch (ex) {
+        print("ERR rtc_video_renderer_impl.dart $ex");
+      }
     });
   }
 
@@ -91,24 +99,28 @@ class RTCVideoRenderer extends ValueNotifier<RTCVideoValue>
   }
 
   void eventListener(dynamic event) {
-    final Map<dynamic, dynamic> map = event;
-    switch (map['event']) {
-      case 'didTextureChangeRotation':
-        value =
-            value.copyWith(rotation: map['rotation'], renderVideo: renderVideo);
-        onResize?.call();
-        break;
-      case 'didTextureChangeVideoSize':
-        value = value.copyWith(
-            width: 0.0 + map['width'],
-            height: 0.0 + map['height'],
-            renderVideo: renderVideo);
-        onResize?.call();
-        break;
-      case 'didFirstFrameRendered':
-        value = value.copyWith(renderVideo: renderVideo);
-        onFirstFrameRendered?.call();
-        break;
+    try {
+      final Map<dynamic, dynamic> map = event;
+      switch (map['event']) {
+        case 'didTextureChangeRotation':
+          value = value.copyWith(
+              rotation: map['rotation'], renderVideo: renderVideo);
+          onResize?.call();
+          break;
+        case 'didTextureChangeVideoSize':
+          value = value.copyWith(
+              width: 0.0 + map['width'],
+              height: 0.0 + map['height'],
+              renderVideo: renderVideo);
+          onResize?.call();
+          break;
+        case 'didFirstFrameRendered':
+          value = value.copyWith(renderVideo: renderVideo);
+          onFirstFrameRendered?.call();
+          break;
+      }
+    } catch (ex) {
+      print("ERR rtc_video_renderer_impl.dart $ex");
     }
   }
 

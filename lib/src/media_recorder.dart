@@ -8,22 +8,40 @@ class MediaRecorder extends rtc.MediaRecorder {
 
   @override
   Future<void> start(String path,
-          {MediaStreamTrack? videoTrack, RecorderAudioChannel? audioChannel}) =>
+      {MediaStreamTrack? videoTrack,
+      RecorderAudioChannel? audioChannel}) async {
+    try {
       _delegate.start(path, videoTrack: videoTrack, audioChannel: audioChannel);
+    } catch (ex) {
+      print("ERR MediaRecorder.start $ex");
+    }
+  }
 
   @override
-  Future stop() => _delegate.stop();
+  Future stop() async {
+    try {
+      _delegate.stop();
+    } catch (ex) {
+      print("ERR MediaRecorder.stop $ex");
+    }
+  }
 
   @override
   void startWeb(
     MediaStream stream, {
     Function(dynamic blob, bool isLastOne)? onDataChunk,
-    String? mimeType,int timeSlice = 1000,
-  }) =>
+    String? mimeType,
+    int timeSlice = 1000,
+  }) async {
+    try {
       _delegate.startWeb(
         stream,
         onDataChunk: onDataChunk,
         mimeType: mimeType ?? 'video/webm',
         timeSlice: timeSlice,
       );
+    } catch (ex) {
+      print("ERR MediaRecorder.startWeb $ex");
+    }
+  }
 }
