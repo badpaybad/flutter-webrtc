@@ -20,6 +20,7 @@ import androidx.annotation.RequiresApi;
 import com.cloudwebrtc.webrtc.audio.AudioDeviceKind;
 import com.cloudwebrtc.webrtc.audio.AudioSwitchManager;
 import com.cloudwebrtc.webrtc.record.AudioChannel;
+import com.cloudwebrtc.webrtc.record.DunpFrameCapturer;
 import com.cloudwebrtc.webrtc.record.FrameCapturer;
 import com.cloudwebrtc.webrtc.utils.AnyThreadResult;
 import com.cloudwebrtc.webrtc.utils.Callback;
@@ -196,6 +197,19 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
 
     final AnyThreadResult result = new AnyThreadResult(notSafeResult);
     switch (call.method) {
+      case "dunpCaptureFrameOfCurrentVideoStream":
+        String videoTrackId1 = call.argument("trackId");
+        if (videoTrackId1 != null) {
+          MediaStreamTrack track = getTrackForId(videoTrackId1);
+          if (track instanceof VideoTrack) {
+            new DunpFrameCapturer((VideoTrack) track, result);
+          } else {
+            resultError("captureFrame", "It's not video track", result);
+          }
+        } else {
+          resultError("captureFrame", "Track is null", result);
+        }
+        break;
       case "initPeerConnectionFactory":{
         Log.i("dunp", "dunp----------------------- initPeerConnectionFactory");
         if (mFactory != null) {
@@ -1105,6 +1119,9 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
             observer);
     observer.setPeerConnection(peerConnection);
     mPeerConnectionObservers.put(peerConnectionId, observer);
+
+    DunpFrameCapturer.Init(peerConnectionId, peerConnection,messenger);
+
     return peerConnectionId;
   }
 
@@ -1670,6 +1687,8 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     } else {
       pco.close();
     }
+
+    DunpFrameCapturer.Close(id);
   }
 
   public void peerConnectionDispose(final String id) {

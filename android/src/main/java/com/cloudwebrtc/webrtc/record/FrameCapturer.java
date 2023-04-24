@@ -82,6 +82,7 @@ public class FrameCapturer implements VideoSink {
         new Handler(Looper.getMainLooper()).post(() -> {
             videoTrack.removeSink(this);
         });
+
         try {
             if (!file.exists()) {
                 //noinspection ResultOfMethodCallIgnored
@@ -93,6 +94,7 @@ public class FrameCapturer implements VideoSink {
             callback.error("IOException", io.getLocalizedMessage(), io);
             return;
         }
+
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
             yuvImage.compressToJpeg(
                 new Rect(0, 0, width, height),

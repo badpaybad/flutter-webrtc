@@ -1,5 +1,7 @@
 import 'dart:async';
-
+import 'dart:core';
+import 'dart:typed_data';
+import 'package:flutter_webrtc/src/native/DunpFrameCapture.dart';
 import 'package:flutter_webrtc/src/native/mediadevices_impl.dart';
 import 'package:webrtc_interface/webrtc_interface.dart';
 
@@ -49,7 +51,11 @@ class RTCFactoryNative extends RTCFactory {
     );
 
     String peerConnectionId = response['peerConnectionId'];
-    return RTCPeerConnectionNative(peerConnectionId, configuration);
+    var peerConnect = RTCPeerConnectionNative(peerConnectionId, configuration);
+
+    DunpFrameCapture.instance.init(peerConnect, peerConnectionId );
+
+    return peerConnect;
   }
 
   @override
@@ -86,6 +92,25 @@ class RTCFactoryNative extends RTCFactory {
     );
     return RTCRtpCapabilities.fromMap(response);
   }
+}
+/**
+ * have to call this to listen onFrame DunpFrameCapture
+ */
+Future<void> dunpCaptureFrameOfCurrentVideoStream(String trackId, String peerConnectionId,{Future<void> Function(Uint8List)? onFrame}) async{
+  await WebRTC.invokeMethod(
+    'dunpCaptureFrameOfCurrentVideoStream',
+    <String, dynamic>{
+      'trackId': trackId,
+      'peerConnectionId': peerConnectionId
+    },
+  );
+  if(onFrame!=null)
+  {
+    DunpFrameCapture.instance.stream.listen((event) async{
+     await onFrame(Uint8List.fromList(event));
+    });
+  }
+
 }
 
 Future<void> initPeerConnectionFactory(Map<String,dynamic> args) async{

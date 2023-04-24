@@ -1,3 +1,51 @@
+# Flutter-WebRTC modify for ros usage
+
+                    factory_impl.dart function must be call first initPeerConnectionFactory
+                    //step 1:
+                    await initPeerConnectionFactory({
+                      "decoders": {
+                        "video": deviceInfo.data["product"] == "rk3288" ? 2 : 3
+                        //"video": 2
+                        //1: hardware, 2: soft, 3: fallback
+                      },
+                      "logs": {"traceEnable": 0}
+                    });
+                    //step 2:
+                    localVideoRenderer = RTCVideoRenderer();
+                    await localVideoRenderer!.initialize();
+
+                    remoteVideoRenderer = RTCVideoRenderer();
+                    await remoteVideoRenderer!.initialize();
+
+                     MediaStream localMediaStream = await navigator.mediaDevices
+        .getUserMedia(WebRtcConfig.localMediaConstraints);
+
+                    localVideoRenderer!
+            .setSrcObject(stream: localMediaStream!, trackId: vt.id);
+
+                    //step 3:
+                    _localPeerConnection = await createPeerConnection(
+                          WebRtcConfig.iceConfiguration, WebRtcConfig.peerConfig);
+
+# Flutter-WebRTC modify for ros code change
+
+factory_impl.dart
+                
+                initPeerConnectionFactory ( ... add some option for video config and init, software or hardware encode decode 
+
+rtc_peerconnection_impl.dart
+    
+                method channel for flutter, call to MethodCallHandlerImpl.java 
+                
+
+MethodCallHandlerImpl.java 
+                
+                 case "initPeerConnectionFactory":{ ... use for init everything first, also call ensureInitialized();
+
+                ensureInitialized(); modify for init video encode decode type ( hardware or software ... )
+
+
+
 # Flutter-WebRTC
 
 [![Financial Contributors on Open Collective](https://opencollective.com/flutter-webrtc/all/badge.svg?label=financial+contributors)](https://opencollective.com/flutter-webrtc) [![pub package](https://img.shields.io/pub/v/flutter_webrtc.svg)](https://pub.dartlang.org/packages/flutter_webrtc) [![Gitter](https://badges.gitter.im/flutter-webrtc/Lobby.svg)](https://gitter.im/flutter-webrtc/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) [![slack](https://img.shields.io/badge/join-us%20on%20slack-gray.svg?longCache=true&logo=slack&colorB=brightgreen)](https://join.slack.com/t/flutterwebrtc/shared_invite/zt-q83o7y1s-FExGLWEvtkPKM8ku_F8cEQ)
