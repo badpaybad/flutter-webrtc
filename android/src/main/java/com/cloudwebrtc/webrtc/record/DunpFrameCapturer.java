@@ -1,56 +1,27 @@
 package com.cloudwebrtc.webrtc.record;
 
 import android.util.Log;
-import androidx.annotation.Nullable;
 
-import com.cloudwebrtc.webrtc.audio.AudioSwitchManager;
-import com.cloudwebrtc.webrtc.utils.AnyThreadSink;
-import com.cloudwebrtc.webrtc.utils.ConstraintsArray;
-import com.cloudwebrtc.webrtc.utils.ConstraintsMap;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
-import java.lang.reflect.Field;
-import java.math.BigInteger;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.List;
-import java.util.UUID;
-import org.webrtc.AudioTrack;
-import org.webrtc.CandidatePairChangeEvent;
-import org.webrtc.DataChannel;
-import org.webrtc.DtmfSender;
-import org.webrtc.IceCandidate;
-import org.webrtc.MediaStream;
-import org.webrtc.MediaStreamTrack;
+
 import org.webrtc.PeerConnection;
-import org.webrtc.RTCStats;
-import org.webrtc.RTCStatsCollectorCallback;
-import org.webrtc.RTCStatsReport;
-import org.webrtc.RtpCapabilities;
-import org.webrtc.RtpParameters;
-import org.webrtc.RtpReceiver;
-import org.webrtc.RtpSender;
-import org.webrtc.RtpTransceiver;
-import org.webrtc.StatsObserver;
-import org.webrtc.StatsReport;
 import org.webrtc.VideoTrack;
 
 import android.util.ArrayMap;
 
 import org.webrtc.VideoFrame;
 import org.webrtc.VideoSink;
-import org.webrtc.VideoTrack;
 import org.webrtc.YuvHelper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.os.Handler;
@@ -58,9 +29,11 @@ import android.os.Looper;
 
 public class DunpFrameCapturer implements VideoSink {
 
+    public DunpFrameCapturer(){}
+
     static java.util.Map<String,java.util.Timer> _listTimer = new ArrayMap<>();
 
-    static java.util.concurrent.PriorityBlockingQueue<byte[]> _frameCaptured=new java.util.concurrent.PriorityBlockingQueue<byte[]>();
+    static java.util.concurrent.ConcurrentLinkedQueue <int[]> _frameCaptured=new java.util.concurrent.ConcurrentLinkedQueue<>();
     public void dispose(){
 
         this.Close(_peerConnectionId);
@@ -93,6 +66,36 @@ public class DunpFrameCapturer implements VideoSink {
 
     static EventChannel.EventSink _attachEvent;
 
+    static Handler _handlerUiThread;
+    static final Runnable _runnableSent2FlutterUi = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                //todo: _frameCaptured should be long to each trackIdimer
+
+                int qsize=_frameCaptured.size();
+                //Log.i("DunpFrame StartCapture timer ",_mapTrackCaputrer.size()+" "+ _listTimer.size()+" qs "+qsize);
+
+                if(qsize==0) return;
+
+                int[] dataImage = _frameCaptured.poll();
+
+                if(dataImage==null)return;
+
+                //Log.i("DunpFrameCapturer","1");
+                _latestFrame= dataImage;
+
+                _handlerUiThread.post(()->_attachEvent.success(dataImage));
+
+                //Log.i("DunpFrameCapturer","2");
+                //fire event to flutter by _attachEvent
+
+            }catch (Exception ex){
+                Log.i("DunpFrameCapturer","ERR timer dequeue "+ ex.getMessage(),ex);
+            }
+        }
+    };
+
     public static void Init(String peerConnectionId, PeerConnection peerConnection, BinaryMessenger messager){
         _peerConnection= peerConnection;
         _peerConnectionId= peerConnectionId;
@@ -103,11 +106,18 @@ public class DunpFrameCapturer implements VideoSink {
                 new EventChannel.StreamHandler() {
                     @Override
                     public void onListen(Object args, final EventChannel.EventSink events) {
+
                         _attachEvent = events;
+
+                        _handlerUiThread= new Handler(Looper.getMainLooper());
+
                     }
 
                     @Override
                     public void onCancel(Object args) {
+
+                        _handlerUiThread.removeCallbacks(_runnableSent2FlutterUi);
+                        _handlerUiThread =null;
                         _attachEvent=null;
                     }
                 }
@@ -115,9 +125,12 @@ public class DunpFrameCapturer implements VideoSink {
 
     }
 
-    public DunpFrameCapturer(VideoTrack track, MethodChannel.Result callback) {
+    public void StartCapture(VideoTrack track, MethodChannel.Result callback) {
 
         String tid=track.id();
+        String keyName="DunpFrameCapture_"+tid;
+
+        Log.i("DunpFrame StartCapture",_mapTrackCaputrer.size()+" "+ _listTimer.size());
 
         if(_mapTrackCaputrer.containsKey(tid)==false){
             _mapTrackCaputrer.put(tid,this);
@@ -127,37 +140,20 @@ public class DunpFrameCapturer implements VideoSink {
             _mapTracks.put(_peerConnectionId,trackids);
         }else{
             _mapTrackResult.replace(tid, callback);
-            List<VideoTrack> trackids= _mapTracks.get(_peerConnectionId);
-            trackids.add(track);
-            return;
+            return ;
         }
 
-        java.util.Timer timer= new  java.util.Timer("DunpFrameCapture_"+tid);
+        java.util.Timer timer= new  java.util.Timer(keyName);
 
         if(_listTimer.containsKey(tid)==false){
             _listTimer.put(tid,timer);
 
-        timer.schedule( new java.util.TimerTask() {
-            public void run() {
-                //todo: _frameCaptured should be long to each trackId
-                int lenRemain= _frameCaptured.size()-1000;
-                try {
-                if(lenRemain>0){
-                    //prevent stuck queue or too delay
-                    for(int i=0 ;i<lenRemain;i++){
-                        _frameCaptured.remove();
+            timer.schedule( new java.util.TimerTask()
+            {
+                public void run() {
+                    _runnableSent2FlutterUi.run();
                     }
-                }
-
-                byte[] dataImage = _frameCaptured.remove();
-                    _latestFrame= dataImage;
-                _attachEvent.success(dataImage);
-                //fire event to flutter by _attachEvent
-
-                }catch (Exception ex){}
-
-                }
-            },40L);
+            },0L, 40L);
         }
 
         track.addSink(this);
@@ -165,8 +161,8 @@ public class DunpFrameCapturer implements VideoSink {
     }
 
     //todo: _frameCaptured should be long to each trackId
-    static  byte[] _latestFrame;
-    public static byte[]  get(String trackId){
+    static  int[] _latestFrame;
+    public static int[]  get(String trackId){
        return _latestFrame;
     }
 
@@ -215,7 +211,6 @@ public class DunpFrameCapturer implements VideoSink {
                 null);
         i420Buffer.release();
         videoFrame.release();
-
 //        new Handler(Looper.getMainLooper()).post(() -> {
 //            videoTrack.removeSink(this);
 //        });
@@ -229,33 +224,64 @@ public class DunpFrameCapturer implements VideoSink {
                     100,
                     byteArrayOutputStream
             );
-            byte[] dataImage = byteArrayOutputStream.toByteArray();
-            Bitmap frameInBmp = BitmapFactory.decodeByteArray(dataImage, 0, dataImage.length);
+            byte[] temp = byteArrayOutputStream.toByteArray();
             rotation=videoFrame.getRotation();
-            switch (rotation) {
-                case 0:
-                    _frameCaptured.put(dataImage);
-                    break;
-                case 90:
-                case 180:
-                case 270:
+            int[] dataImage= new int[temp.length+3];
+            dataImage[0]=rotation;
+            dataImage[1]=width;
+            dataImage[2]=height;
 
-                    Matrix matrix = new Matrix();
-                    matrix.postRotate(videoFrame.getRotation());
-                    Bitmap rotated = Bitmap.createBitmap(frameInBmp, 0, 0, frameInBmp.getWidth(), frameInBmp.getHeight(), matrix, true);
-                    java.io.ByteArrayOutputStream rotatedOutputStream = new java.io.ByteArrayOutputStream();
-                    rotated.compress(Bitmap.CompressFormat.JPEG, 100, rotatedOutputStream);
-
-                    _frameCaptured.put(rotatedOutputStream.toByteArray());
-                    break;
-                default:
-                    // Rotation is checked to always be 0, 90, 180 or 270 by VideoFrame
-                    throw new RuntimeException("Invalid rotation");
+            for(int i=3;i< dataImage.length;i++){
+                dataImage[3]=temp[i-3];
             }
-            //callback.success(null);
+            temp=null;
+
+            int qsize=_frameCaptured.size();
+
+            //Log.i("DunpFrame StartCapture onFrame","ts "+_mapTrackCaputrer.size()+" ts "+ _listTimer.size()+" qs "+qsize);
+
+            int lenRemain= qsize-1000;
+            if(lenRemain>0){
+                //prevent stuck queue or too delay
+                for(int i=0 ;i<lenRemain;i++){
+                  int[] torem=  _frameCaptured.remove();
+                  torem=null;
+                }
+            }
+
+            _frameCaptured. offer(dataImage);
+
+//            Bitmap frameInBmp = BitmapFactory.decodeByteArray(dataImage, 0, dataImage.length);
+
+//            switch (rotation) {
+//                case 0:
+//                    _frameCaptured.put(dataImage);
+//                    break;
+//                case 90:
+//                case 180:
+//                case 270:
+//
+//                    Matrix matrix = new Matrix();
+//                    matrix.postRotate(videoFrame.getRotation());
+//                    Bitmap rotated = Bitmap.createBitmap(frameInBmp, 0, 0, frameInBmp.getWidth(), frameInBmp.getHeight(), matrix, true);
+//                    java.io.ByteArrayOutputStream rotatedOutputStream = new java.io.ByteArrayOutputStream();
+//                    rotated.compress(Bitmap.CompressFormat.JPEG, 100, rotatedOutputStream);
+//                    Log.i("DunpFrameCapturer","6");
+//                    _frameCaptured.put(rotatedOutputStream.toByteArray());
+//                    break;
+//                default:
+//                    // Rotation is checked to always be 0, 90, 180 or 270 by VideoFrame
+//                    throw new RuntimeException("Invalid rotation");
+//            }
         }catch (Exception ex){
             //callback.error("IOException",ex);
+            Log.i("DunpFrameCapturer","ERR "+ ex.getMessage(),ex);
         }
+        yuvBuffer=null;
+        cleanedArray=null;
+        buffer=null;
+        yuvImage=null;
+
         //end#dunp
 
     }

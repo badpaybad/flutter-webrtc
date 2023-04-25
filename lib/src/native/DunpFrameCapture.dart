@@ -5,59 +5,59 @@ import 'package:flutter/services.dart';
 
 import '../../flutter_webrtc.dart';
 
-class DunpFrameCapture{
-
-  final StreamController<Uint8List> _frameStream =StreamController<Uint8List>.broadcast();
+class DunpFrameCapture {
+  final StreamController<Uint8List> _frameStream =
+      StreamController<Uint8List>.broadcast();
 
   //todo: should each trackid video got own stream
-  Stream<List<int>> get stream=>_frameStream.stream;
+  Stream<List<int>> get stream => _frameStream.stream;
 
- static DunpFrameCapture instance = DunpFrameCapture._();
+  static DunpFrameCapture instance = DunpFrameCapture._();
 
   var _eventChannel = EventChannel('DunpFrameCapturerEventChannel');
 
-  DunpFrameCapture._(){
-
- }
+  DunpFrameCapture._() {}
 
   RTCPeerConnection? peerConnection;
   String? peerConnectionId;
 
-  bool _isInit=false;
+  bool _isInit = false;
 
-  Timer ? _timer;
+  Timer? _timer;
 
   StreamSubscription? _streamSubscription;
 
-  void dispose(){
+  void dispose() {
     _streamSubscription?.cancel();
     _timer?.cancel();
     peerConnection?.dispose();
   }
 
- Future<void> init(RTCPeerConnection peerConnection,String peerConnectionId) async{
-   if(_isInit) return;
+  Future<void> init(
+      RTCPeerConnection peerConnection, String peerConnectionId) async {
+    if (_isInit) return;
 
-   _isInit=false;
+    _isInit = false;
 
-   this.peerConnection=peerConnection;
-   this.peerConnectionId=peerConnectionId;
-   _streamSubscription = _eventChannel.receiveBroadcastStream().listen((data) async{
-     _frameStream.add(data);
-   });
+    this.peerConnection = peerConnection;
+    this.peerConnectionId = peerConnectionId;
+    _streamSubscription =
+        _eventChannel.receiveBroadcastStream().listen((data) async {
+      if (data == null) return;
 
-   _isInit=true;
+      _frameStream.add(Uint8List.fromList(List<int>.from(data)));
+      //print("receiveBroadcastStream from java ${data}");
+    });
 
+    _isInit = true;
+  }
 
- }
-
- Future<List<int>> getLatestFrame(String trackId)async{
-   final response = await WebRTC.invokeMethod('dunpCaptureFrameOfCurrentVideoStream',
-       <String, dynamic>{
-         'trackId': trackId,
-         'peerConnectionId': peerConnectionId
-       });
-   return response;
- }
-
+  Future<List<int>> getLatestFrame(String trackId) async {
+    final response = await WebRTC.invokeMethod(
+        'dunpCaptureFrameOfCurrentVideoStream', <String, dynamic>{
+      'trackId': trackId,
+      'peerConnectionId': peerConnectionId
+    });
+    return response;
+  }
 }

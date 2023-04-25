@@ -198,16 +198,19 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
     final AnyThreadResult result = new AnyThreadResult(notSafeResult);
     switch (call.method) {
       case "dunpCaptureFrameOfCurrentVideoStream":
+        Log.i("dunpCaptureFrameOfCurrentVideoStream","called");
         String videoTrackId1 = call.argument("trackId");
         if (videoTrackId1 != null) {
           MediaStreamTrack track = getTrackForId(videoTrackId1);
           if (track instanceof VideoTrack) {
-            new DunpFrameCapturer((VideoTrack) track, result);
+            new DunpFrameCapturer().StartCapture((VideoTrack) track, result);
           } else {
-            resultError("captureFrame", "It's not video track", result);
+            //resultError("captureFrame", "It's not video track", result);
+            Log.i("dunpCaptureFrameOfCurrentVideoStream", "It's not video track");
           }
         } else {
-          resultError("captureFrame", "Track is null", result);
+          //resultError("captureFrame", "Track is null", result);
+          Log.i("dunpCaptureFrameOfCurrentVideoStream", "Track is null");
         }
         break;
       case "initPeerConnectionFactory":{
