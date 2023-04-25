@@ -32,7 +32,6 @@ class RTCFactoryNative extends RTCFactory {
   Future<RTCPeerConnection> createPeerConnection(
       Map<String, dynamic> configuration,
       [Map<String, dynamic> constraints = const {}]) async {
-
     print("------------dunp-------------------");
 
     var defaultConstraints = <String, dynamic>{
@@ -53,7 +52,7 @@ class RTCFactoryNative extends RTCFactory {
     String peerConnectionId = response['peerConnectionId'];
     var peerConnect = RTCPeerConnectionNative(peerConnectionId, configuration);
 
-    DunpFrameCapture.instance.init(peerConnect, peerConnectionId );
+    DunpFrameCapture.instance.init(peerConnect, peerConnectionId);
 
     return peerConnect;
   }
@@ -93,27 +92,25 @@ class RTCFactoryNative extends RTCFactory {
     return RTCRtpCapabilities.fromMap(response);
   }
 }
+
 /**
  * have to call this to listen onFrame DunpFrameCapture
  */
-Future<void> dunpCaptureFrameOfCurrentVideoStream(String trackId, String peerConnectionId,{Future<void> Function(Uint8List)? onFrame}) async{
+Future<void> dunpCaptureFrameOfCurrentVideoStream(
+    String trackId, String peerConnectionId,
+    {Future<void> Function(DunpFrameCaptured)? onFrame}) async {
   await WebRTC.invokeMethod(
     'dunpCaptureFrameOfCurrentVideoStream',
-    <String, dynamic>{
-      'trackId': trackId,
-      'peerConnectionId': peerConnectionId
-    },
+    <String, dynamic>{'trackId': trackId, 'peerConnectionId': peerConnectionId},
   );
-  if(onFrame!=null)
-  {
-    DunpFrameCapture.instance.stream.listen((event) async{
-     await onFrame(Uint8List.fromList(event));
+  if (onFrame != null) {
+    DunpFrameCapture.instance.frameNotifier.addListener(() async {
+      await onFrame(DunpFrameCapture.instance.frameNotifier.value);
     });
   }
-
 }
 
-Future<void> initPeerConnectionFactory(Map<String,dynamic> args) async{
+Future<void> initPeerConnectionFactory(Map<String, dynamic> args) async {
   /*
   * args
      {
