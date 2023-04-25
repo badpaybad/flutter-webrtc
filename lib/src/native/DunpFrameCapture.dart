@@ -1,20 +1,18 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../../flutter_webrtc.dart';
 
 class DunpFrameCapture {
-  final StreamController<Uint8List> _frameStream =
-      StreamController<Uint8List>.broadcast();
-
-  //todo: should each trackid video got own stream
-  Stream<List<int>> get stream => _frameStream.stream;
-
   static DunpFrameCapture instance = DunpFrameCapture._();
 
   var _eventChannel = EventChannel('DunpFrameCapturerEventChannel');
+
+  final ValueNotifier<DunpFrameCaptured> frameNotifier =
+      ValueNotifier<DunpFrameCaptured>(DunpFrameCaptured(width: 0, height: 0, rotation: 0, data: Uint8List.fromList([])));
 
   DunpFrameCapture._() {}
 
@@ -43,9 +41,22 @@ class DunpFrameCapture {
     this.peerConnectionId = peerConnectionId;
     _streamSubscription =
         _eventChannel.receiveBroadcastStream().listen((data) async {
-      if (data == null) return;
+      try {
+        //print("receiveBroadcastStream from java\r\n${data}");
 
-      _frameStream.add(Uint8List.fromList(List<int>.from(data)));
+        if (data == null) return;
+        var rotation=data[0];
+        var width=data[1];
+        var height=data[2];
+        var temp = Uint8List.fromList(List<int>.from(data).skip(3).toList());
+        //print("receiveBroadcastStream from java\r\n${temp}");
+
+        frameNotifier.value = DunpFrameCaptured(width: width, height: height, rotation: rotation, data: temp);
+
+        frameNotifier.notifyListeners();
+      } catch (ex) {
+        print("receiveBroadcastStream from java ERR $ex \r\n${data}");
+      }
       //print("receiveBroadcastStream from java ${data}");
     });
 
@@ -60,4 +71,13 @@ class DunpFrameCapture {
     });
     return response;
   }
+}
+
+class DunpFrameCaptured{
+  DunpFrameCaptured({required this.width,required this.height,required this.rotation,required this.data});
+  int width;
+  int height;
+  Uint8List data;
+  int rotation;
+
 }

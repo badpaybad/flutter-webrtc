@@ -234,7 +234,6 @@ public class DunpFrameCapturer implements VideoSink {
             for(int i=3;i< dataImage.length;i++){
                 dataImage[3]=temp[i-3];
             }
-            temp=null;
 
             int qsize=_frameCaptured.size();
 
@@ -244,8 +243,8 @@ public class DunpFrameCapturer implements VideoSink {
             if(lenRemain>0){
                 //prevent stuck queue or too delay
                 for(int i=0 ;i<lenRemain;i++){
-                  int[] torem=  _frameCaptured.remove();
-                  torem=null;
+                    _frameCaptured.remove();
+
                 }
             }
 
@@ -277,10 +276,10 @@ public class DunpFrameCapturer implements VideoSink {
             //callback.error("IOException",ex);
             Log.i("DunpFrameCapturer","ERR "+ ex.getMessage(),ex);
         }
-        yuvBuffer=null;
-        cleanedArray=null;
-        buffer=null;
-        yuvImage=null;
+//        yuvBuffer=null;
+//        cleanedArray=null;
+//        buffer=null;
+//        yuvImage=null;
 
         //end#dunp
 
