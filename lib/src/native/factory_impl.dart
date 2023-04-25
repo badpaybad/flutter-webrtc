@@ -102,11 +102,8 @@ Future<void> dunpCaptureFrameOfCurrentVideoStream(
 
   if (onFrame != null) {
 
-    print("dunpCaptureFrameOfCurrentVideoStream onFrame not null");
-
     DunpFrameCapture.instance.frameNotifier.addListener(() async {
-
-      print("meCapture.instance.frameNotifier.addListener ${DunpFrameCapture.instance.frameNotifier.value}");
+     // print("meCapture.instance.frameNotifier.addListener ${DunpFrameCapture.instance.frameNotifier.value}");
 
       await onFrame(DunpFrameCapture.instance.frameNotifier.value);
     });

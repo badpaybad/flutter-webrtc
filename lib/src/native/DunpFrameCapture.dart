@@ -81,4 +81,9 @@ class DunpFrameCaptured {
   Uint8List data;
   int rotation;
   DateTime createdAt = DateTime.now();
+
+  @override
+  String toString() {
+    return "id: $id width: $width height: $height rotation: $rotation createdAt: $createdAt data len: ${data.length}";
+  }
 }
