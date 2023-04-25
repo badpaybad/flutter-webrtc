@@ -99,15 +99,23 @@ class RTCFactoryNative extends RTCFactory {
 Future<void> dunpCaptureFrameOfCurrentVideoStream(
     String trackId, String peerConnectionId,
     {Future<void> Function(DunpFrameCaptured)? onFrame}) async {
+
+  if (onFrame != null) {
+
+    print("dunpCaptureFrameOfCurrentVideoStream onFrame not null");
+
+    DunpFrameCapture.instance.frameNotifier.addListener(() async {
+
+      print("meCapture.instance.frameNotifier.addListener ${DunpFrameCapture.instance.frameNotifier.value}");
+
+      await onFrame(DunpFrameCapture.instance.frameNotifier.value);
+    });
+  }
+
   await WebRTC.invokeMethod(
     'dunpCaptureFrameOfCurrentVideoStream',
     <String, dynamic>{'trackId': trackId, 'peerConnectionId': peerConnectionId},
   );
-  if (onFrame != null) {
-    DunpFrameCapture.instance.frameNotifier.addListener(() async {
-      await onFrame(DunpFrameCapture.instance.frameNotifier.value);
-    });
-  }
 }
 
 Future<void> initPeerConnectionFactory(Map<String, dynamic> args) async {

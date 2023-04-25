@@ -27,6 +27,8 @@ import android.graphics.YuvImage;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+
 public class DunpFrameCapturer implements VideoSink {
 
     public DunpFrameCapturer(){}
@@ -48,7 +50,7 @@ public class DunpFrameCapturer implements VideoSink {
 
     public static void Close(String peerConnectionId){
         _mapTrackCaputrer.clear();
-        _mapTrackResult.clear();
+
         _mapTracks.remove(peerConnectionId);
         _listTimer.get(peerConnectionId).cancel();
         _listTimer.remove(peerConnectionId);
@@ -61,7 +63,7 @@ public class DunpFrameCapturer implements VideoSink {
     static  EventChannel _eventChannel;
 
     static java.util.Map<String,DunpFrameCapturer> _mapTrackCaputrer =new ArrayMap<>();
-    static java.util.Map<String,MethodChannel.Result > _mapTrackResult =new ArrayMap<>();
+
     static java.util.Map<String, List<VideoTrack>> _mapTracks = new ArrayMap<>();
 
     static EventChannel.EventSink _attachEvent;
@@ -125,7 +127,7 @@ public class DunpFrameCapturer implements VideoSink {
 
     }
 
-    public void StartCapture(VideoTrack track, MethodChannel.Result callback) {
+    public void StartCapture(@NonNull VideoTrack track) {
 
         String tid=track.id();
         String keyName="DunpFrameCapture_"+tid;
@@ -134,12 +136,12 @@ public class DunpFrameCapturer implements VideoSink {
 
         if(_mapTrackCaputrer.containsKey(tid)==false){
             _mapTrackCaputrer.put(tid,this);
-            _mapTrackResult.put(tid, callback);
+
             List<VideoTrack> trackids = new ArrayList<>();
             trackids.add(track);
             _mapTracks.put(_peerConnectionId,trackids);
         }else{
-            _mapTrackResult.replace(tid, callback);
+
             return ;
         }
 
@@ -160,10 +162,10 @@ public class DunpFrameCapturer implements VideoSink {
 
     }
 
-    //todo: _frameCaptured should be long to each trackId
     static  int[] _latestFrame;
-    public static int[]  get(String trackId){
-       return _latestFrame;
+    public static int[]  getLatestFrame(String trackId){
+        //todo: _frameCaptured should be long to each trackId
+        return _latestFrame;
     }
 
     int width;

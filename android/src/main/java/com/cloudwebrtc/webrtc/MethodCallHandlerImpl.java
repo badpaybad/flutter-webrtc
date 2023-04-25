@@ -203,7 +203,7 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
         if (videoTrackId1 != null) {
           MediaStreamTrack track = getTrackForId(videoTrackId1);
           if (track instanceof VideoTrack) {
-            new DunpFrameCapturer().StartCapture((VideoTrack) track, result);
+            new DunpFrameCapturer().StartCapture((VideoTrack) track);
           } else {
             //resultError("captureFrame", "It's not video track", result);
             Log.i("dunpCaptureFrameOfCurrentVideoStream", "It's not video track");
@@ -212,6 +212,9 @@ public class MethodCallHandlerImpl implements MethodCallHandler, StateProvider {
           //resultError("captureFrame", "Track is null", result);
           Log.i("dunpCaptureFrameOfCurrentVideoStream", "Track is null");
         }
+
+        result.success(null);
+
         break;
       case "initPeerConnectionFactory":{
         Log.i("dunp", "dunp----------------------- initPeerConnectionFactory");

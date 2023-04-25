@@ -11,8 +11,9 @@ class DunpFrameCapture {
 
   var _eventChannel = EventChannel('DunpFrameCapturerEventChannel');
 
-  final ValueNotifier<DunpFrameCaptured> frameNotifier =
-      ValueNotifier<DunpFrameCaptured>(DunpFrameCaptured(width: 0, height: 0, rotation: 0, data: Uint8List.fromList([])));
+  ValueNotifier<DunpFrameCaptured> frameNotifier =
+      ValueNotifier<DunpFrameCaptured>(DunpFrameCaptured(
+          width: 0, height: 0, rotation: 0, data: Uint8List.fromList([])));
 
   DunpFrameCapture._() {}
 
@@ -42,18 +43,17 @@ class DunpFrameCapture {
     _streamSubscription =
         _eventChannel.receiveBroadcastStream().listen((data) async {
       try {
-        //print("receiveBroadcastStream from java\r\n${data}");
+        //
 
         if (data == null) return;
-        var rotation=data[0];
-        var width=data[1];
-        var height=data[2];
+        var rotation = data[0];
+        var width = data[1];
+        var height = data[2];
         var temp = Uint8List.fromList(List<int>.from(data).skip(3).toList());
         //print("receiveBroadcastStream from java\r\n${temp}");
 
-        frameNotifier.value = DunpFrameCaptured(width: width, height: height, rotation: rotation, data: temp);
-
-        frameNotifier.notifyListeners();
+        frameNotifier.value = DunpFrameCaptured(
+            width: width, height: height, rotation: rotation, data: temp);
       } catch (ex) {
         print("receiveBroadcastStream from java ERR $ex \r\n${data}");
       }
@@ -62,22 +62,23 @@ class DunpFrameCapture {
 
     _isInit = true;
   }
-
-  Future<List<int>> getLatestFrame(String trackId) async {
-    final response = await WebRTC.invokeMethod(
-        'dunpCaptureFrameOfCurrentVideoStream', <String, dynamic>{
-      'trackId': trackId,
-      'peerConnectionId': peerConnectionId
-    });
-    return response;
-  }
 }
 
-class DunpFrameCaptured{
-  DunpFrameCaptured({required this.width,required this.height,required this.rotation,required this.data});
+class DunpFrameCaptured {
+  DunpFrameCaptured(
+      {required this.width,
+      required this.height,
+      required this.rotation,
+      required this.data,
+      DateTime? createdAt,
+      UniqueKey? id})
+      : this.createdAt = createdAt ?? DateTime.now(),
+        this.id = id ?? UniqueKey();
+
+  UniqueKey id = UniqueKey();
   int width;
   int height;
   Uint8List data;
   int rotation;
-
+  DateTime createdAt = DateTime.now();
 }
