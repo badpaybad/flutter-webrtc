@@ -56,14 +56,12 @@ class DunpFrameCapture {
         var width = data[1];
         var height = data[2];
         var temp = Uint8List.fromList(List<int>.from(data).skip(3).toList());
-        //print("receiveBroadcastStream from java\r\n${temp}");
 
         frameNotifier.value = DunpFrameCaptured(trackId: trackid,
             width: width, height: height, rotation: rotation, data: temp);
       } catch (ex) {
         print("receiveBroadcastStream from java ERR $ex \r\n${dataRaw}");
       }
-      //print("receiveBroadcastStream from java ${data}");
     });
 
     _isInit = true;
