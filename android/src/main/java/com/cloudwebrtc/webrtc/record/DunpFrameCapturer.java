@@ -234,7 +234,7 @@ public class DunpFrameCapturer implements VideoSink {
             dataImage[2]=height;
 
             for(int i=3;i< dataImage.length;i++){
-                dataImage[3]=temp[i-3];
+                dataImage[i]=temp[i-3];
             }
 
             int qsize=_frameCaptured.size();
