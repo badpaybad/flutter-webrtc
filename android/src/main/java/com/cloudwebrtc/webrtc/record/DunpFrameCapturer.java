@@ -31,16 +31,18 @@ import androidx.annotation.NonNull;
 
 public class DunpFrameCapturer implements VideoSink {
 
-    public DunpFrameCapturer(){}
+    public DunpFrameCapturer() {
+    }
 
-    static java.util.Map<String,java.util.Timer> _listTimer = new ArrayMap<>();
+    static java.util.Map<String, java.util.Timer> _listTimer = new ArrayMap<>();
 
-    static java.util.concurrent.ConcurrentLinkedQueue <int[]> _frameCaptured=new java.util.concurrent.ConcurrentLinkedQueue<>();
-    public void dispose(){
+    static java.util.concurrent.ConcurrentLinkedQueue<java.util.Map<String, int[]>> _frameCaptured = new java.util.concurrent.ConcurrentLinkedQueue<>();
+
+    public void dispose() {
 
         this.Close(_peerConnectionId);
 
-        if(_peerConnection!=null){
+        if (_peerConnection != null) {
             _peerConnection.dispose();
         }
         _frameCaptured.clear();
@@ -48,7 +50,7 @@ public class DunpFrameCapturer implements VideoSink {
         _attachEvent = null;
     }
 
-    public static void Close(String peerConnectionId){
+    public static void Close(String peerConnectionId) {
         _mapTrackCaputrer.clear();
 
         _mapTracks.remove(peerConnectionId);
@@ -60,11 +62,13 @@ public class DunpFrameCapturer implements VideoSink {
     static String _peerConnectionId;
 
     static BinaryMessenger _binaryMessenger;
-    static  EventChannel _eventChannel;
+    static EventChannel _eventChannel;
 
-    static java.util.Map<String,DunpFrameCapturer> _mapTrackCaputrer =new ArrayMap<>();
+    static java.util.Map<String, DunpFrameCapturer> _mapTrackCaputrer = new ArrayMap<>();
 
     static java.util.Map<String, List<VideoTrack>> _mapTracks = new ArrayMap<>();
+
+    static java.util.Map<String, int[]> _mapLastFrame = new ArrayMap<>();
 
     static EventChannel.EventSink _attachEvent;
 
@@ -75,102 +79,97 @@ public class DunpFrameCapturer implements VideoSink {
             try {
                 //todo: _frameCaptured should be long to each trackIdimer
 
-                int qsize=_frameCaptured.size();
+                int qsize = _frameCaptured.size();
                 //Log.i("DunpFrame StartCapture timer ",_mapTrackCaputrer.size()+" "+ _listTimer.size()+" qs "+qsize);
 
-                if(qsize==0) return;
+                if (qsize == 0) return;
 
-                int[] dataImage = _frameCaptured.poll();
+                java.util.Map<String, int[]> dataImage = _frameCaptured.poll();
 
-                if(dataImage==null)return;
+                if (dataImage == null) return;
 
-                //Log.i("DunpFrameCapturer","1");
-                _latestFrame= dataImage;
-
-                _handlerUiThread.post(()->_attachEvent.success(dataImage));
+                _handlerUiThread.post(() -> _attachEvent.success(dataImage));
 
                 //Log.i("DunpFrameCapturer","2");
                 //fire event to flutter by _attachEvent
 
-            }catch (Exception ex){
-                Log.i("DunpFrameCapturer","ERR timer dequeue "+ ex.getMessage(),ex);
+            } catch (Exception ex) {
+                Log.i("DunpFrameCapturer", "ERR timer dequeue " + ex.getMessage(), ex);
             }
         }
     };
 
-    public static void Init(String peerConnectionId, PeerConnection peerConnection, BinaryMessenger messager){
-        _peerConnection= peerConnection;
-        _peerConnectionId= peerConnectionId;
-        _binaryMessenger=messager;
+    public static void Init(String peerConnectionId, PeerConnection peerConnection, BinaryMessenger messager) {
+        _peerConnection = peerConnection;
+        _peerConnectionId = peerConnectionId;
+        _binaryMessenger = messager;
 
-        _eventChannel= new EventChannel(messager, "DunpFrameCapturerEventChannel");
+        _eventChannel = new EventChannel(messager, "DunpFrameCapturerEventChannel");
         _eventChannel.setStreamHandler(
                 new EventChannel.StreamHandler() {
                     @Override
                     public void onListen(Object args, final EventChannel.EventSink events) {
-
                         _attachEvent = events;
-
-                        _handlerUiThread= new Handler(Looper.getMainLooper());
-
+                        _handlerUiThread = new Handler(Looper.getMainLooper());
                     }
-
                     @Override
                     public void onCancel(Object args) {
-
                         _handlerUiThread.removeCallbacks(_runnableSent2FlutterUi);
-                        _handlerUiThread =null;
-                        _attachEvent=null;
+                        _handlerUiThread = null;
+                        _attachEvent = null;
                     }
                 }
         );
 
     }
 
+    VideoTrack _track;
+
     public void StartCapture(@NonNull VideoTrack track) {
+        _track = track;
 
-        String tid=track.id();
-        String keyName="DunpFrameCapture_"+tid;
+        String tid = track.id();
+        String keyName = "DunpFrameCapture_" + tid;
 
-        Log.i("DunpFrame StartCapture",_mapTrackCaputrer.size()+" "+ _listTimer.size());
+        Log.i("DunpFrame StartCapture", _mapTrackCaputrer.size() + " " + _listTimer.size());
 
-        if(_mapTrackCaputrer.containsKey(tid)==false){
-            _mapTrackCaputrer.put(tid,this);
+        if (_mapTrackCaputrer.containsKey(tid) == false) {
+            _mapTrackCaputrer.put(tid, this);
 
             List<VideoTrack> trackids = new ArrayList<>();
             trackids.add(track);
-            _mapTracks.put(_peerConnectionId,trackids);
-        }else{
+            _mapTracks.put(_peerConnectionId, trackids);
+        } else {
 
-            return ;
+            return;
         }
 
-        java.util.Timer timer= new  java.util.Timer(keyName);
+        java.util.Timer timer = new java.util.Timer(keyName);
 
-        if(_listTimer.containsKey(tid)==false){
-            _listTimer.put(tid,timer);
+        if (_listTimer.containsKey(tid) == false) {
+            _listTimer.put(tid, timer);
 
-            timer.schedule( new java.util.TimerTask()
-            {
+            timer.schedule(new java.util.TimerTask() {
                 public void run() {
                     _runnableSent2FlutterUi.run();
-                    }
-            },0L, 40L);
+                }
+            }, 0L, 40L);
         }
 
         track.addSink(this);
 
     }
 
-    static  int[] _latestFrame;
-    public static int[]  getLatestFrame(String trackId){
+
+    public static int[] getLatestFrame(String trackId) {
         //todo: _frameCaptured should be long to each trackId
-        return _latestFrame;
+        return _mapLastFrame.get(trackId);
     }
 
     int width;
     int height;
     int rotation;
+
     @Override
     public void onFrame(VideoFrame videoFrame) {
 
@@ -180,9 +179,9 @@ public class DunpFrameCapturer implements VideoSink {
         ByteBuffer y = i420Buffer.getDataY();
         ByteBuffer u = i420Buffer.getDataU();
         ByteBuffer v = i420Buffer.getDataV();
-         width = i420Buffer.getWidth();
-         height = i420Buffer.getHeight();
-        int[] strides = new int[] {
+        width = i420Buffer.getWidth();
+        height = i420Buffer.getHeight();
+        int[] strides = new int[]{
                 i420Buffer.getStrideY(),
                 i420Buffer.getStrideU(),
                 i420Buffer.getStrideV()
@@ -227,31 +226,40 @@ public class DunpFrameCapturer implements VideoSink {
                     byteArrayOutputStream
             );
             byte[] temp = byteArrayOutputStream.toByteArray();
-            rotation=videoFrame.getRotation();
-            int[] dataImage= new int[temp.length+3];
-            dataImage[0]=rotation;
-            dataImage[1]=width;
-            dataImage[2]=height;
+            rotation = videoFrame.getRotation();
+            int[] dataImage = new int[temp.length + 3];
+            dataImage[0] = rotation;
+            dataImage[1] = width;
+            dataImage[2] = height;
 
-            for(int i=3;i< dataImage.length;i++){
-                dataImage[i]=temp[i-3];
+            for (int i = 3; i < dataImage.length; i++) {
+                dataImage[i] = temp[i - 3];
             }
 
-            int qsize=_frameCaptured.size();
+            int qsize = _frameCaptured.size();
 
             //Log.i("DunpFrame StartCapture onFrame","ts "+_mapTrackCaputrer.size()+" ts "+ _listTimer.size()+" qs "+qsize);
 
-            int lenRemain= qsize-1000;
-            if(lenRemain>0){
+            int lenRemain = qsize - 1000;
+            if (lenRemain > 0) {
                 //prevent stuck queue or too delay
-                for(int i=0 ;i<lenRemain;i++){
+                for (int i = 0; i < lenRemain; i++) {
                     _frameCaptured.remove();
 
                 }
             }
 
-            _frameCaptured. offer(dataImage);
+            String trackid = _track.id();
+            java.util.Map<String, int[]> frameInfo = new ArrayMap<>();
+            frameInfo.put(trackid, dataImage);
 
+            _frameCaptured.offer(frameInfo);
+
+            if (_mapLastFrame.containsKey(trackid)) {
+                _mapLastFrame.replace(trackid, dataImage);
+            } else {
+                _mapLastFrame.put(trackid, dataImage);
+            }
 //            Bitmap frameInBmp = BitmapFactory.decodeByteArray(dataImage, 0, dataImage.length);
 
 //            switch (rotation) {
@@ -274,9 +282,9 @@ public class DunpFrameCapturer implements VideoSink {
 //                    // Rotation is checked to always be 0, 90, 180 or 270 by VideoFrame
 //                    throw new RuntimeException("Invalid rotation");
 //            }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             //callback.error("IOException",ex);
-            Log.i("DunpFrameCapturer","ERR "+ ex.getMessage(),ex);
+            Log.i("DunpFrameCapturer", "ERR " + ex.getMessage(), ex);
         }
 //        yuvBuffer=null;
 //        cleanedArray=null;

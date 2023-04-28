@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -12,7 +13,7 @@ class DunpFrameCapture {
   var _eventChannel = EventChannel('DunpFrameCapturerEventChannel');
 
   ValueNotifier<DunpFrameCaptured> frameNotifier =
-      ValueNotifier<DunpFrameCaptured>(DunpFrameCaptured(
+      ValueNotifier<DunpFrameCaptured>(DunpFrameCaptured(trackId: "",
           width: 0, height: 0, rotation: 0, data: Uint8List.fromList([])));
 
   DunpFrameCapture._() {}
@@ -41,21 +42,26 @@ class DunpFrameCapture {
     this.peerConnection = peerConnection;
     this.peerConnectionId = peerConnectionId;
     _streamSubscription =
-        _eventChannel.receiveBroadcastStream().listen((data) async {
+        _eventChannel.receiveBroadcastStream().listen((dataRaw) async {
       try {
         //
+        if (dataRaw == null) return;
 
-        if (data == null) return;
+        dataRaw= dataRaw as Map<String,dynamic>;
+
+        var trackid= dataRaw.keys.first;
+        var data= dataRaw.values.first;
+
         var rotation = data[0];
         var width = data[1];
         var height = data[2];
         var temp = Uint8List.fromList(List<int>.from(data).skip(3).toList());
         //print("receiveBroadcastStream from java\r\n${temp}");
 
-        frameNotifier.value = DunpFrameCaptured(
+        frameNotifier.value = DunpFrameCaptured(trackId: trackid,
             width: width, height: height, rotation: rotation, data: temp);
       } catch (ex) {
-        print("receiveBroadcastStream from java ERR $ex \r\n${data}");
+        print("receiveBroadcastStream from java ERR $ex \r\n${dataRaw}");
       }
       //print("receiveBroadcastStream from java ${data}");
     });
@@ -66,7 +72,8 @@ class DunpFrameCapture {
 
 class DunpFrameCaptured {
   DunpFrameCaptured(
-      {required this.width,
+      {required this.trackId,
+        required this.width,
       required this.height,
       required this.rotation,
       required this.data,
@@ -81,6 +88,7 @@ class DunpFrameCaptured {
   Uint8List data;
   int rotation;
   DateTime createdAt = DateTime.now();
+  String trackId;
 
   @override
   String toString() {
