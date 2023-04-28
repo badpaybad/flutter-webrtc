@@ -47,9 +47,9 @@ class DunpFrameCapture {
         //
         if (dataRaw == null) return;
 
-        dataRaw= dataRaw as Map<String,dynamic>;
+        dataRaw= dataRaw as Map<dynamic,dynamic>;
 
-        var trackid= dataRaw.keys.first;
+        String trackid= dataRaw.keys.first;
         var data= dataRaw.values.first;
 
         var rotation = data[0];
