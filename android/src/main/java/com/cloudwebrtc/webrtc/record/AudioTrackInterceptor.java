@@ -37,6 +37,7 @@ public final class AudioTrackInterceptor extends AudioTrack {
 
     @Override
     public int write(@NonNull byte[] audioData, int offsetInBytes, int sizeInBytes) {
+        if(originalTrack==null) return -1;
         callback.onWebRtcAudioRecordSamplesReady(new AudioSamples(
             originalTrack.getAudioFormat(),
             originalTrack.getChannelCount(),
@@ -49,6 +50,8 @@ public final class AudioTrackInterceptor extends AudioTrack {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int write(@NonNull ByteBuffer audioData, int sizeInBytes, int writeMode) {
+        if(originalTrack==null) return -1;
+
         byte[] trimmed = new byte[sizeInBytes];
         int position = audioData.position();
         audioData.get(trimmed, 0, sizeInBytes);
@@ -69,11 +72,14 @@ public final class AudioTrackInterceptor extends AudioTrack {
 
     @Override
     public int getPlayState() {
+        if(originalTrack==null) return -1;
+
         return originalTrack.getPlayState();
     }
 
     @Override
     public void play() throws IllegalStateException {
+        if(originalTrack==null) return ;
         originalTrack.play();
     }
 
@@ -85,28 +91,37 @@ public final class AudioTrackInterceptor extends AudioTrack {
     @TargetApi(Build.VERSION_CODES.N)
     @Override
     public int getUnderrunCount() {
-        return originalTrack.getUnderrunCount();
+        if(originalTrack==null) return -1;
+        try {
+            return originalTrack.getUnderrunCount();
+        }catch (Exception ex){
+            return -1;
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.N)
     @Override
     public int getBufferCapacityInFrames() {
+        if(originalTrack==null) return 0;
         return originalTrack.getBufferCapacityInFrames();
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     @Override
     public int getBufferSizeInFrames() {
+        if(originalTrack==null) return 1024;
         return originalTrack.getBufferSizeInFrames();
     }
 
     @Override
     public void release() {
+        if(originalTrack==null) return ;
         originalTrack.release();
     }
 
     @Override
     public int getPlaybackHeadPosition() {
+        if(originalTrack==null) return 0;
         return originalTrack.getPlaybackHeadPosition();
     }
 }

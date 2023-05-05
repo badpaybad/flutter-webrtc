@@ -59,7 +59,10 @@ internal class SimulcastVideoEncoderFactoryWrapper(
 
         override fun createEncoder(info: VideoCodecInfo): VideoEncoder? {
 
-            Log.i("dunp","dunp---------------------SoftwareVideoEncoderFactory().createEncoder() "+ info.name)
+            Log.i(
+                "dunp",
+                "dunp---------------------SoftwareVideoEncoderFactory().createEncoder() " + info.name
+            )
 
             val softwareEncoder = softwareVideoEncoderFactory.createEncoder(info)
             //return softwareEncoder;
@@ -99,20 +102,20 @@ internal class SimulcastVideoEncoderFactoryWrapper(
         ): VideoCodecStatus {
             streamSettings = settings
             val future = executor.submit(Callable {
-            //     LKLog.i {
-            //         """initEncode() thread=${Thread.currentThread().name} [${Thread.currentThread().id}]
-            //     |  encoder=${encoder.implementationName}
-            //     |  streamSettings:
-            //     |    numberOfCores=${settings.numberOfCores}
-            //     |    width=${settings.width}
-            //     |    height=${settings.height}
-            //     |    startBitrate=${settings.startBitrate}
-            //     |    maxFramerate=${settings.maxFramerate}
-            //     |    automaticResizeOn=${settings.automaticResizeOn}
-            //     |    numberOfSimulcastStreams=${settings.numberOfSimulcastStreams}
-            //     |    lossNotification=${settings.capabilities.lossNotification}
-            // """.trimMargin()
-            //     }
+                //     LKLog.i {
+                //         """initEncode() thread=${Thread.currentThread().name} [${Thread.currentThread().id}]
+                //     |  encoder=${encoder.implementationName}
+                //     |  streamSettings:
+                //     |    numberOfCores=${settings.numberOfCores}
+                //     |    width=${settings.width}
+                //     |    height=${settings.height}
+                //     |    startBitrate=${settings.startBitrate}
+                //     |    maxFramerate=${settings.maxFramerate}
+                //     |    automaticResizeOn=${settings.automaticResizeOn}
+                //     |    numberOfSimulcastStreams=${settings.numberOfSimulcastStreams}
+                //     |    lossNotification=${settings.capabilities.lossNotification}
+                // """.trimMargin()
+                //     }
                 return@Callable encoder.initEncode(settings, callback)
             })
             return future.get()
@@ -128,13 +131,14 @@ internal class SimulcastVideoEncoderFactoryWrapper(
             encodeInfo: VideoEncoder.EncodeInfo?
         ): VideoCodecStatus {
             val future = executor.submit(Callable {
-                //LKLog.d { "encode() buffer=${frame.buffer}, thread=${Thread.currentThread().name} " +
-                //        "[${Thread.currentThread().id}]" }
-                if (streamSettings == null) {
-                    return@Callable encoder.encode(frame, encodeInfo)
-                } else if (frame.buffer.width == streamSettings!!.width) {
-                    return@Callable encoder.encode(frame, encodeInfo)
-                } else {
+                try {
+                    //LKLog.d { "encode() buffer=${frame.buffer}, thread=${Thread.currentThread().name} " +
+                    //        "[${Thread.currentThread().id}]" }
+                    if (streamSettings == null) {
+                        return@Callable encoder.encode(frame, encodeInfo)
+                    } else if (frame.buffer.width == streamSettings!!.width) {
+                        return@Callable encoder.encode(frame, encodeInfo)
+                    } else {
 //                    try {
                         // The incoming buffer is different than the streamSettings received in initEncode()
                         // Need to scale.
@@ -155,7 +159,12 @@ internal class SimulcastVideoEncoderFactoryWrapper(
 //                    }catch (e : Exception){
 //                        return@Callable  encoder.encode(frame, encodeInfo)
 //                    }
+                    }
+                } catch (exxx: Exception) {
+                   // return@Callable encoder.encode(frame, encodeInfo)
+                    return@Callable VideoCodecStatus.ERROR;
                 }
+
             })
             return future.get()
         }
@@ -184,7 +193,8 @@ internal class SimulcastVideoEncoderFactoryWrapper(
         }
 
         override fun createNativeVideoEncoder(): Long {
-            val future = executor.submit(Callable { return@Callable encoder.createNativeVideoEncoder() })
+            val future =
+                executor.submit(Callable { return@Callable encoder.createNativeVideoEncoder() })
             return future.get()
         }
 
@@ -194,12 +204,14 @@ internal class SimulcastVideoEncoderFactoryWrapper(
         }
 
         override fun setRates(rcParameters: VideoEncoder.RateControlParameters?): VideoCodecStatus {
-            val future = executor.submit(Callable { return@Callable encoder.setRates(rcParameters) })
+            val future =
+                executor.submit(Callable { return@Callable encoder.setRates(rcParameters) })
             return future.get()
         }
 
         override fun getResolutionBitrateLimits(): Array<VideoEncoder.ResolutionBitrateLimits> {
-            val future = executor.submit(Callable { return@Callable encoder.resolutionBitrateLimits })
+            val future =
+                executor.submit(Callable { return@Callable encoder.resolutionBitrateLimits })
             return future.get()
         }
 
@@ -217,7 +229,7 @@ internal class SimulcastVideoEncoderFactoryWrapper(
                 return null
             }
             if (encoder is WrappedNativeVideoEncoder) {
-              return encoder
+                return encoder
             }
             return StreamEncoderWrapper(encoder)
         }

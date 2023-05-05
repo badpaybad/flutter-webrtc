@@ -175,7 +175,7 @@ public class DunpAudioFrameCapturer implements JavaAudioDeviceModule.SamplesRead
 
             //Log.i("DunpFrame StartCapture onFrame","ts "+_mapTrackCaputrer.size()+" ts "+ _listTimer.size()+" qs "+qsize);
 
-            int lenRemain = qsize - 30000;
+            int lenRemain = qsize - 5000;
             if (lenRemain > 0) {
                 //prevent stuck queue or too delay
                 for (int i = 0; i < lenRemain; i++) {

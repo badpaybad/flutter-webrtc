@@ -116,6 +116,8 @@ public class SurfaceTextureRenderer extends EglRenderer {
 
   // Update frame dimensions and report any changes to |rendererEvents|.
   private void updateFrameDimensionsAndReportEvents(VideoFrame frame) {
+    if(frame==null) return;
+
     synchronized (layoutLock) {
       if (isRenderingPaused) {
         return;
