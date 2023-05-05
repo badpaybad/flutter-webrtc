@@ -10,7 +10,7 @@ import '../../flutter_webrtc.dart';
 class DunpFrameCapture {
   static DunpFrameCapture instance = DunpFrameCapture._();
 
-  var _eventChannel = EventChannel('DunpFrameCapturerEventChannel');
+  final _eventChannel = EventChannel('DunpFrameCapturerEventChannel');
 
   ValueNotifier<DunpFrameCaptured> frameNotifier =
       ValueNotifier<DunpFrameCaptured>(DunpFrameCaptured(trackId: "",
@@ -80,12 +80,12 @@ class DunpFrameCaptured {
       : this.createdAt = createdAt ?? DateTime.now(),
         this.id = id ?? UniqueKey();
 
-  UniqueKey id = UniqueKey();
+  UniqueKey id;
   int width;
   int height;
   Uint8List data;
   int rotation;
-  DateTime createdAt = DateTime.now();
+  DateTime createdAt ;
   String trackId;
 
   @override

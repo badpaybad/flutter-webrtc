@@ -112,6 +112,7 @@ public class DunpFrameCapturer implements VideoSink {
                         _attachEvent = events;
                         _handlerUiThread = new Handler(Looper.getMainLooper());
                     }
+
                     @Override
                     public void onCancel(Object args) {
                         _handlerUiThread.removeCallbacks(_runnableSent2FlutterUi);
@@ -172,94 +173,95 @@ public class DunpFrameCapturer implements VideoSink {
 
     @Override
     public void onFrame(VideoFrame videoFrame) {
+        try {
 
-        videoFrame.retain();
-        VideoFrame.Buffer buffer = videoFrame.getBuffer();
-        VideoFrame.I420Buffer i420Buffer = buffer.toI420();
-        ByteBuffer y = i420Buffer.getDataY();
-        ByteBuffer u = i420Buffer.getDataU();
-        ByteBuffer v = i420Buffer.getDataV();
-        width = i420Buffer.getWidth();
-        height = i420Buffer.getHeight();
-        int[] strides = new int[]{
-                i420Buffer.getStrideY(),
-                i420Buffer.getStrideU(),
-                i420Buffer.getStrideV()
-        };
-        final int chromaWidth = (width + 1) / 2;
-        final int chromaHeight = (height + 1) / 2;
-        final int minSize = width * height + chromaWidth * chromaHeight * 2;
+            videoFrame.retain();
+            VideoFrame.Buffer buffer = videoFrame.getBuffer();
+            VideoFrame.I420Buffer i420Buffer = buffer.toI420();
+            ByteBuffer y = i420Buffer.getDataY();
+            ByteBuffer u = i420Buffer.getDataU();
+            ByteBuffer v = i420Buffer.getDataV();
+            width = i420Buffer.getWidth();
+            height = i420Buffer.getHeight();
+            int[] strides = new int[]{
+                    i420Buffer.getStrideY(),
+                    i420Buffer.getStrideU(),
+                    i420Buffer.getStrideV()
+            };
+            final int chromaWidth = (width + 1) / 2;
+            final int chromaHeight = (height + 1) / 2;
+            final int minSize = width * height + chromaWidth * chromaHeight * 2;
 
-        ByteBuffer yuvBuffer = ByteBuffer.allocateDirect(minSize);
-        // NV21 is the same as NV12, only that V and U are stored in the reverse oder
-        // NV21 (YYYYYYYYY:VUVU)
-        // NV12 (YYYYYYYYY:UVUV)
-        // Therefore we can use the NV12 helper, but swap the U and V input buffers
-        YuvHelper.I420ToNV12(y, strides[0], v, strides[2], u, strides[1], yuvBuffer, width, height);
+            ByteBuffer yuvBuffer = ByteBuffer.allocateDirect(minSize);
+            // NV21 is the same as NV12, only that V and U are stored in the reverse oder
+            // NV21 (YYYYYYYYY:VUVU)
+            // NV12 (YYYYYYYYY:UVUV)
+            // Therefore we can use the NV12 helper, but swap the U and V input buffers
+            YuvHelper.I420ToNV12(y, strides[0], v, strides[2], u, strides[1], yuvBuffer, width, height);
 
-        // For some reason the ByteBuffer may have leading 0. We remove them as
-        // otherwise the
-        // image will be shifted
-        byte[] cleanedArray = Arrays.copyOfRange(yuvBuffer.array(), yuvBuffer.arrayOffset(), minSize);
+            // For some reason the ByteBuffer may have leading 0. We remove them as
+            // otherwise the
+            // image will be shifted
+            byte[] cleanedArray = Arrays.copyOfRange(yuvBuffer.array(), yuvBuffer.arrayOffset(), minSize);
 
-        YuvImage yuvImage = new YuvImage(
-                cleanedArray,
-                ImageFormat.NV21,
-                width,
-                height,
-                // We omit the strides here. If they were included, the resulting image would
-                // have its colors offset.
-                null);
-        i420Buffer.release();
-        videoFrame.release();
+            YuvImage yuvImage = new YuvImage(
+                    cleanedArray,
+                    ImageFormat.NV21,
+                    width,
+                    height,
+                    // We omit the strides here. If they were included, the resulting image would
+                    // have its colors offset.
+                    null);
+            i420Buffer.release();
+            videoFrame.release();
 //        new Handler(Looper.getMainLooper()).post(() -> {
 //            videoTrack.removeSink(this);
 //        });
 
-        //begin#dunp
-        try {
+            //begin#dunp
+            try {
 
-            java.io.ByteArrayOutputStream byteArrayOutputStream = new java.io.ByteArrayOutputStream();
-            yuvImage.compressToJpeg(
-                    new Rect(0, 0, width, height),
-                    100,
-                    byteArrayOutputStream
-            );
-            byte[] temp = byteArrayOutputStream.toByteArray();
-            rotation = videoFrame.getRotation();
-            int[] dataImage = new int[temp.length + 3];
-            dataImage[0] = rotation;
-            dataImage[1] = width;
-            dataImage[2] = height;
+                java.io.ByteArrayOutputStream byteArrayOutputStream = new java.io.ByteArrayOutputStream();
+                yuvImage.compressToJpeg(
+                        new Rect(0, 0, width, height),
+                        100,
+                        byteArrayOutputStream
+                );
+                byte[] temp = byteArrayOutputStream.toByteArray();
+                rotation = videoFrame.getRotation();
+                int[] dataImage = new int[temp.length + 3];
+                dataImage[0] = rotation;
+                dataImage[1] = width;
+                dataImage[2] = height;
 
-            for (int i = 3; i < dataImage.length; i++) {
-                dataImage[i] = temp[i - 3];
-            }
-
-            int qsize = _frameCaptured.size();
-
-            //Log.i("DunpFrame StartCapture onFrame","ts "+_mapTrackCaputrer.size()+" ts "+ _listTimer.size()+" qs "+qsize);
-
-            int lenRemain = qsize - 1000;
-            if (lenRemain > 0) {
-                //prevent stuck queue or too delay
-                for (int i = 0; i < lenRemain; i++) {
-                    _frameCaptured.remove();
-
+                for (int i = 3; i < dataImage.length; i++) {
+                    dataImage[i] = temp[i - 3];
                 }
-            }
 
-            String trackid = _track.id();
-            java.util.Map<String, int[]> frameInfo = new ArrayMap<>();
-            frameInfo.put(trackid, dataImage);
+                int qsize = _frameCaptured.size();
 
-            _frameCaptured.offer(frameInfo);
+                //Log.i("DunpFrame StartCapture onFrame","ts "+_mapTrackCaputrer.size()+" ts "+ _listTimer.size()+" qs "+qsize);
 
-            if (_mapLastFrame.containsKey(trackid)) {
-                _mapLastFrame.replace(trackid, dataImage);
-            } else {
-                _mapLastFrame.put(trackid, dataImage);
-            }
+                int lenRemain = qsize - 1000;
+                if (lenRemain > 0) {
+                    //prevent stuck queue or too delay
+                    for (int i = 0; i < lenRemain; i++) {
+                        _frameCaptured.poll();
+
+                    }
+                }
+
+                String trackid = _track.id();
+                java.util.Map<String, int[]> frameInfo = new ArrayMap<>();
+                frameInfo.put(trackid, dataImage);
+
+                _frameCaptured.offer(frameInfo);
+
+                if (_mapLastFrame.containsKey(trackid)) {
+                    _mapLastFrame.replace(trackid, dataImage);
+                } else {
+                    _mapLastFrame.put(trackid, dataImage);
+                }
 //            Bitmap frameInBmp = BitmapFactory.decodeByteArray(dataImage, 0, dataImage.length);
 
 //            switch (rotation) {
@@ -282,16 +284,19 @@ public class DunpFrameCapturer implements VideoSink {
 //                    // Rotation is checked to always be 0, 90, 180 or 270 by VideoFrame
 //                    throw new RuntimeException("Invalid rotation");
 //            }
-        } catch (Exception ex) {
-            //callback.error("IOException",ex);
-            Log.i("DunpFrameCapturer", "ERR " + ex.getMessage(), ex);
-        }
+            } catch (Exception ex) {
+                //callback.error("IOException",ex);
+                Log.i("DunpFrameCapturer", "ERR " + ex.getMessage(), ex);
+            }
 //        yuvBuffer=null;
 //        cleanedArray=null;
 //        buffer=null;
 //        yuvImage=null;
 
-        //end#dunp
+            //end#dunp
 
+        } catch (Exception ex1) {
+            Log.d("DunpFrameCapturer", ex1.getMessage(), ex1);
+        }
     }
 }

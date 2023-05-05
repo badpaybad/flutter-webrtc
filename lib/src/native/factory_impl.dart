@@ -6,6 +6,7 @@ import 'package:flutter_webrtc/src/native/mediadevices_impl.dart';
 import 'package:webrtc_interface/webrtc_interface.dart';
 
 import '../desktop_capturer.dart';
+import 'DunpAudioFrameCapture.dart';
 import 'desktop_capturer_impl.dart';
 import 'media_recorder_impl.dart';
 import 'media_stream_impl.dart';
@@ -52,7 +53,9 @@ class RTCFactoryNative extends RTCFactory {
     String peerConnectionId = response['peerConnectionId'];
     var peerConnect = RTCPeerConnectionNative(peerConnectionId, configuration);
 
-    DunpFrameCapture.instance.init(peerConnect, peerConnectionId);
+    await DunpFrameCapture.instance.init(peerConnect, peerConnectionId);
+
+    await DunpAudioFrameCapture.instance.init(peerConnect, peerConnectionId);
 
     return peerConnect;
   }
@@ -99,11 +102,9 @@ class RTCFactoryNative extends RTCFactory {
 Future<void> dunpCaptureFrameOfCurrentVideoStream(
     String trackId, String peerConnectionId,
     {Future<void> Function(DunpFrameCaptured)? onFrame}) async {
-
   if (onFrame != null) {
-
     DunpFrameCapture.instance.frameNotifier.addListener(() async {
-     // print("meCapture.instance.frameNotifier.addListener ${DunpFrameCapture.instance.frameNotifier.value}");
+      // print("meCapture.instance.frameNotifier.addListener ${DunpFrameCapture.instance.frameNotifier.value}");
 
       await onFrame(DunpFrameCapture.instance.frameNotifier.value);
     });
@@ -114,6 +115,26 @@ Future<void> dunpCaptureFrameOfCurrentVideoStream(
     <String, dynamic>{'trackId': trackId, 'peerConnectionId': peerConnectionId},
   );
 }
+
+
+Future<void> dunpCaptureFrameOfCurrentAudioStream(String peerConnectionId,
+    {Future<void> Function(DunpAudioFrameCaptured)? onInputCapture,Future<void> Function(DunpAudioFrameCaptured)? onOutputCapture}) async {
+  if (onInputCapture != null) {
+    DunpAudioFrameCapture.instance.frameNotifierInput.addListener(() async {
+      await onInputCapture(DunpAudioFrameCapture.instance.frameNotifierInput.value);
+    });
+  }
+  if (onOutputCapture != null) {
+    DunpAudioFrameCapture.instance.frameNotifierOutput.addListener(() async {
+      await onOutputCapture(DunpAudioFrameCapture.instance.frameNotifierOutput.value);
+    });
+  }
+  await WebRTC.invokeMethod(
+    'dunpCaptureFrameOfCurrentAudioStream',
+    <String, dynamic>{'peerConnectionId': peerConnectionId},
+  );
+}
+
 
 Future<void> initPeerConnectionFactory(Map<String, dynamic> args) async {
   /*
