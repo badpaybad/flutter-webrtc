@@ -51,11 +51,20 @@ public class DunpFrameCapturer implements VideoSink {
     }
 
     public static void Close(String peerConnectionId) {
-        _mapTrackCaputrer.clear();
+        try {
+            _mapTrackCaputrer.clear();
 
-        _mapTracks.remove(peerConnectionId);
-        _listTimer.get(peerConnectionId).cancel();
-        _listTimer.remove(peerConnectionId);
+            _mapTracks.remove(peerConnectionId);
+            try {
+                _listTimer.get(peerConnectionId).cancel();
+            } catch (Exception ex) {
+            }
+            try {
+                _listTimer.remove(peerConnectionId);
+            } catch (Exception ex) {
+            }
+        } catch (Exception ex) {
+        }
     }
 
     static PeerConnection _peerConnection;
