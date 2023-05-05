@@ -150,7 +150,7 @@ public class DunpAudioFrameCapturer implements JavaAudioDeviceModule.SamplesRead
         try {
             byte[] temp = audioSamples.getData();
             int[] data = new int[temp.length + 4];
-            Log.d("DunpAudioFrameCapturer.onWebRtcAudioRecordSamplesReady", " " + temp);
+            //Log.d("DunpAudioFrameCapturer.onWebRtcAudioRecordSamplesReady", " " + temp);
 
             java.util.concurrent.ConcurrentLinkedQueue<int[]> _frameCaptured = null;
 
