@@ -598,7 +598,7 @@ class _MyAppState extends State<LoopBackSampleUnifiedTracks> {
       ),
       body: OrientationBuilder(
         builder: (context, orientation) {
-          return Stack(
+          return Stack(fit: StackFit.expand,
             children: [
               Container(
                 decoration: BoxDecoration(color: Colors.black54),

@@ -121,7 +121,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
               child: Container(
             width: MediaQuery.of(context).size.width,
             color: Colors.white10,
-            child: Stack(children: <Widget>[
+            child: Stack(fit: StackFit.expand, children: <Widget>[
               if (_inCalling)
                 Container(
                   margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),

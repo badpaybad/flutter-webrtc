@@ -3,7 +3,7 @@
     package="com.cloudwebrtc.webrtc" >
 
     <uses-sdk
-        android:minSdkVersion="26"
+        android:minSdkVersion="21"
         android:targetSdkVersion="31" />
 
 </manifest>

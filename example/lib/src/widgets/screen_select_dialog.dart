@@ -44,11 +44,10 @@ class _ThumbnailWidgetState extends State<ThumbnailWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-            child: Container(
+        Container(
           decoration: widget.selected
               ? BoxDecoration(
-                  border: Border.all(width: 2, color: Colors.blueAccent))
+              border: Border.all(width: 2, color: Colors.blueAccent))
               : null,
           child: InkWell(
             onTap: () {
@@ -57,13 +56,13 @@ class _ThumbnailWidgetState extends State<ThumbnailWidget> {
             },
             child: widget.source.thumbnail != null
                 ? Image.memory(
-                    widget.source.thumbnail!,
-                    gaplessPlayback: true,
-                    alignment: Alignment.center,
-                  )
+              widget.source.thumbnail!,
+              gaplessPlayback: true,
+              alignment: Alignment.center,
+            )
                 : Container(),
           ),
-        )),
+        ),
         Text(
           widget.source.name,
           style: TextStyle(
@@ -156,7 +155,7 @@ class ScreenSelectDialog extends Dialog {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.all(10),
-              child: Stack(
+              child: Stack(fit: StackFit.expand,
                 children: <Widget>[
                   Align(
                     alignment: Alignment.topLeft,
@@ -175,103 +174,98 @@ class ScreenSelectDialog extends Dialog {
                 ],
               ),
             ),
-            Expanded(
-              flex: 1,
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(10),
-                child: StatefulBuilder(
-                  builder: (context, setState) {
-                    _stateSetter = setState;
-                    return DefaultTabController(
-                      length: 2,
-                      child: Column(
-                        children: <Widget>[
-                          Container(
-                            constraints: BoxConstraints.expand(height: 24),
-                            child: TabBar(
-                                onTap: (value) => Future.delayed(
-                                        Duration(milliseconds: 300), () {
-                                      _sourceType = value == 0
-                                          ? SourceType.Screen
-                                          : SourceType.Window;
-                                      _getSources();
-                                    }),
-                                tabs: [
-                                  Tab(
-                                      child: Text(
-                                    'Entire Screen',
-                                    style: TextStyle(color: Colors.black54),
-                                  )),
-                                  Tab(
-                                      child: Text(
-                                    'Window',
-                                    style: TextStyle(color: Colors.black54),
-                                  )),
-                                ]),
-                          ),
-                          SizedBox(
-                            height: 2,
-                          ),
-                          Expanded(
-                            child: Container(
-                              child: TabBarView(children: [
-                                Align(
-                                    alignment: Alignment.center,
-                                    child: Container(
-                                      child: GridView.count(
-                                        crossAxisSpacing: 8,
-                                        crossAxisCount: 2,
-                                        children: _sources.entries
-                                            .where((element) =>
-                                                element.value.type ==
-                                                SourceType.Screen)
-                                            .map((e) => ThumbnailWidget(
-                                                  onTap: (source) {
-                                                    setState(() {
-                                                      _selected_source = source;
-                                                    });
-                                                  },
-                                                  source: e.value,
-                                                  selected:
-                                                      _selected_source?.id ==
-                                                          e.value.id,
-                                                ))
-                                            .toList(),
-                                      ),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(10),
+              child: StatefulBuilder(
+                builder: (context, setState) {
+                  _stateSetter = setState;
+                  return DefaultTabController(
+                    length: 2,
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          constraints: BoxConstraints.expand(height: 24),
+                          child: TabBar(
+                              onTap: (value) => Future.delayed(
+                                  Duration(milliseconds: 300), () {
+                                _sourceType = value == 0
+                                    ? SourceType.Screen
+                                    : SourceType.Window;
+                                _getSources();
+                              }),
+                              tabs: [
+                                Tab(
+                                    child: Text(
+                                      'Entire Screen',
+                                      style: TextStyle(color: Colors.black54),
                                     )),
-                                Align(
-                                    alignment: Alignment.center,
-                                    child: Container(
-                                      child: GridView.count(
-                                        crossAxisSpacing: 8,
-                                        crossAxisCount: 3,
-                                        children: _sources.entries
-                                            .where((element) =>
-                                                element.value.type ==
-                                                SourceType.Window)
-                                            .map((e) => ThumbnailWidget(
-                                                  onTap: (source) {
-                                                    setState(() {
-                                                      _selected_source = source;
-                                                    });
-                                                  },
-                                                  source: e.value,
-                                                  selected:
-                                                      _selected_source?.id ==
-                                                          e.value.id,
-                                                ))
-                                            .toList(),
-                                      ),
+                                Tab(
+                                    child: Text(
+                                      'Window',
+                                      style: TextStyle(color: Colors.black54),
                                     )),
                               ]),
-                            ),
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        ),
+                        SizedBox(
+                          height: 2,
+                        ),
+                        Container(
+                          child: TabBarView(children: [
+                            Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  child: GridView.count(
+                                    crossAxisSpacing: 8,
+                                    crossAxisCount: 2,
+                                    children: _sources.entries
+                                        .where((element) =>
+                                    element.value.type ==
+                                        SourceType.Screen)
+                                        .map((e) => ThumbnailWidget(
+                                      onTap: (source) {
+                                        setState(() {
+                                          _selected_source = source;
+                                        });
+                                      },
+                                      source: e.value,
+                                      selected:
+                                      _selected_source?.id ==
+                                          e.value.id,
+                                    ))
+                                        .toList(),
+                                  ),
+                                )),
+                            Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  child: GridView.count(
+                                    crossAxisSpacing: 8,
+                                    crossAxisCount: 3,
+                                    children: _sources.entries
+                                        .where((element) =>
+                                    element.value.type ==
+                                        SourceType.Window)
+                                        .map((e) => ThumbnailWidget(
+                                      onTap: (source) {
+                                        setState(() {
+                                          _selected_source = source;
+                                        });
+                                      },
+                                      source: e.value,
+                                      selected:
+                                      _selected_source?.id ==
+                                          e.value.id,
+                                    ))
+                                        .toList(),
+                                  ),
+                                )),
+                          ]),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             Container(

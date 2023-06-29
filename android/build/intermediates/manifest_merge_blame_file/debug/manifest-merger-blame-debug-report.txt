@@ -3,7 +3,7 @@
 3    package="com.cloudwebrtc.webrtc" >
 4
 5    <uses-sdk
-6        android:minSdkVersion="26"
+6        android:minSdkVersion="21"
 6-->/work/flutter-webrtc/android/src/main/AndroidManifest.xml
 7        android:targetSdkVersion="31" />
 7-->/work/flutter-webrtc/android/src/main/AndroidManifest.xml
